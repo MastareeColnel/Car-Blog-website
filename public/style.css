@@ -1,0 +1,53 @@
+body {
+    font-family: 'Times', serif;
+    background-color: #f7f4ec !important; /* Soft warm parchment background */
+    color: #2b2b2b !important;
+}
+
+.blog-header-logo {
+    font-family: 'Georgia', serif;
+    color: #141414 !important;
+}
+
+/* Navigation Links */
+.nav-scroller .nav-link {
+    color: #5c4033 !important;
+    font-style: italic;
+}
+
+.nav-scroller .nav-link:hover, .nav-scroller .nav-link.active {
+    color: #141414 !important;
+    font-weight: bold;
+}
+
+/* Featured Blog Hero */
+.hero-featured {
+    background-color: #141414 !important;
+    border-bottom: 4px solid #3d2c1d !important;
+}
+
+/* Card Borders */
+.border-top-brown {
+    border-top: 4px solid #5c4033 !important;
+}
+
+.border-top-green {
+    border-top: 4px solid #1e3f20 !important;
+}
+
+.card {
+    background-color: #ffffff !important;
+    border: 1px solid #d4ccc0 !important;
+}
+
+/* Footer Section */
+footer.blog-footer {
+    background-color: #141414 !important;
+    color: #8c7d73 !important;
+    border-top: 2px solid #3d2c1d !important;
+    font-style: italic;
+}
+
+footer.blog-footer a {
+    color: #c5a059 !important;
+}
