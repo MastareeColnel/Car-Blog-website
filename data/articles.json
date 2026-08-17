@@ -1,23 +1,47 @@
 [
   {
-    "id": 1786613283240,
-    "title": "The evolution of Toyota Touring Wagons",
+    "id": 1786970583655,
+    "title": "Toyota Mark 2 Supra",
     "author": "Mastaree wizard",
-    "content": "Check out the new article posted in the section, it is about toyotas, especially, toyota touring wagon. it is an old model and does the job always",
-    "date": "August 13, 2026"
+    "content": "The second-generation Toyota Mark II Supra (A60), produced from 1982 to 1986, was sold primarily as the Celica Supra. It featured a longer hood to house an inline-six engine, distinctive 1980s pop-up headlights, and rear-wheel drive.",
+    "date": "August 17, 2026"
+  },
+  {
+    "id": 1786970577808,
+    "title": "Toyota Mark 2 Supra",
+    "author": "Mastaree wizard",
+    "content": "The second-generation Toyota Mark II Supra (A60), produced from 1982 to 1986, was sold primarily as the Celica Supra. It featured a longer hood to house an inline-six engine, distinctive 1980s pop-up headlights, and rear-wheel drive.",
+    "date": "August 17, 2026"
+  },
+  {
+    "id": 1786970165155,
+    "title": "Toyota Mark 2 Supra",
+    "author": "Mastaree wizard",
+    "content": "The second-generation Toyota Mark II Supra (A60), produced from 1982 to 1986, was sold primarily as the Celica Supra. It featured a longer hood to house an inline-six engine, distinctive 1980s pop-up headlights, and rear-wheel drive.",
+    "date": "August 17, 2026"
+  },
+  {
+    "id": 1786613283240,
+    "title": "Toyota Touring Wagon returns",
+    "author": "Wizard",
+    "content": "This is my updated article. Check the new section.",
+    "date": "August 13, 2026",
+    "updatedAt": "2026-08-17T12:30:53.590Z"
   },
   {
     "id": 1786613253856,
-    "title": "this is the new models",
+    "title": "Toyota Godzilla",
     "author": "Mastaree wizard",
-    "content": "Check out the new article posted in the section, it is about toyotas, especially, toyota touring wagon. it is an old model and does the job always",
-    "date": "August 13, 2026"
+    "content": "Easter egg on the famous Tacozilla concept camper (a custom Toyota Tacoma overlanding rig), which features a small cartoon graphic on the hood of Godzilla holding a taco. Alternatively, \"Godzilla\" is the nickname used by Toyota for a massive 20-foot-tall welding robot at their Burnaston plant or a 1,000-pound cab-lifting robot at Toyota Texas",
+    "date": "August 13, 2026",
+    "updatedAt": "2026-08-17T12:45:40.033Z"
   },
   {
     "id": 1786612288825,
-    "title": "The evolution of Toyota Touring Wagons",
-    "author": "Mastaree",
+    "title": "The evolution of Toyota Touring Wagons, Updated Toyota Story",
+    "author": "Mastaree Colnel",
     "content": "Toyota Touring Wagon is a variance of Toyota, a Japanese Automotive Industry.",
-    "date": "August 13, 2026"
+    "date": "August 13, 2026",
+    "updatedAt": "2026-08-17T12:42:28.519Z"
   }
 ]

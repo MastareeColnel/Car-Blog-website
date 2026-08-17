@@ -1,82 +1,320 @@
 const express = require('express');
 const path = require('path');
-const fs = require('fs'); // Node.js File System module to save data
+const fs = require('fs');
+
 const app = express();
 
 const PORT = process.env.PORT || 3000;
 
-// 1. Middleware to parse incoming form data and JSON
+// --------------------------------------------------
+// Middleware
+// --------------------------------------------------
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// 2. Serve static assets (CSS, client-side JS) from the "public" folder
+// Serve CSS, JavaScript, images, etc.
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Path to a local JSON file where we will store submitted articles
-const dataFilePath = path.join(__dirname, 'data', 'articles.json');
+// --------------------------------------------------
+// Data file
+// --------------------------------------------------
 
-// Helper function to read saved articles
-const getStoredArticles = () => {
-  if (!fs.existsSync(dataFilePath)) {
-    return [];
-  }
-  const fileData = fs.readFileSync(dataFilePath, 'utf8');
-  return JSON.parse(fileData || '[]');
-};
+const dataDir = path.join(__dirname, 'data');
+const dataFilePath = path.join(dataDir, 'articles.json');
 
-// 3. Route to serve your main index.html file
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'views', 'index.html'));
-});
-
-// 4. API Route to GET all stored articles (so client-side JS can load them dynamically)
-app.get('/api/articles', (req, res) => {
-  const articles = getStoredArticles();
-  res.json(articles);
-});
-
-// 5. API Route to POST (save) new content submitted from the website
-app.post('/api/articles', (req, res) => {
-  const { title, author, content } = req.body;
-
-  if (!title || !content) {
-    return res.status(400).json({ error: 'Title and content are required!' });
-  }
-
-  const newArticle = {
-    id: Date.now(),
-    title,
-    author: author || 'Anonymous Curator',
-    content,
-    date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-  };
-
-  //6. Add a route to handle deletion from the JSON file
-  app.delete('/api/articles/:id', (req, res) => {
-  const articleId = Number(req.params.id);
-  let articles = getStoredArticles();
-  articles = articles.filter(art => art.id !== articleId);
-  fs.writeFileSync(dataFilePath, JSON.stringify(articles, null, 2));
-  res.json({ success: true });
-});
-
-  // Read existing data, push new article, and write back to file
-  const articles = getStoredArticles();
-  articles.unshift(newArticle); // Add to the beginning of the list
-
-  // Ensure the 'data' directory exists
-  const dataDir = path.dirname(dataFilePath);
+// Make sure the data directory and JSON file exist
+const ensureDataFile = () => {
   if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
   }
 
-  fs.writeFileSync(dataFilePath, JSON.stringify(articles, null, 2));
+  if (!fs.existsSync(dataFilePath)) {
+    fs.writeFileSync(dataFilePath, '[]', 'utf8');
+  }
+};
 
-  // Redirect back to home or send JSON success response
-  res.redirect('/');
+// --------------------------------------------------
+// Helper functions
+// --------------------------------------------------
+
+// Read all stored articles
+const getStoredArticles = () => {
+  ensureDataFile();
+
+  try {
+    const fileData = fs.readFileSync(dataFilePath, 'utf8');
+
+    return JSON.parse(fileData || '[]');
+  } catch (error) {
+    console.error('Error reading articles.json:', error);
+
+    return [];
+  }
+};
+
+// Save articles to the JSON file
+const saveArticles = (articles) => {
+  ensureDataFile();
+
+  fs.writeFileSync(
+    dataFilePath,
+    JSON.stringify(articles, null, 2),
+    'utf8'
+  );
+};
+
+// --------------------------------------------------
+// Pages
+// --------------------------------------------------
+
+// Main homepage
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'index.html'));
 });
 
-// 6. Start the server
+// --------------------------------------------------
+// API: GET all articles
+// --------------------------------------------------
+
+app.get('/api/articles', (req, res) => {
+  try {
+    const articles = getStoredArticles();
+
+    res.json(articles);
+  } catch (error) {
+    console.error('Error fetching articles:', error);
+
+    res.status(500).json({
+      error: 'Unable to load articles.'
+    });
+  }
+});
+
+// --------------------------------------------------
+// API: GET a single article
+// --------------------------------------------------
+
+app.get('/api/articles/:id', (req, res) => {
+  try {
+    const articleId = Number(req.params.id);
+
+    // Check that the ID is a valid number
+    if (Number.isNaN(articleId)) {
+      return res.status(400).json({
+        error: 'Invalid article ID.'
+      });
+    }
+
+    const articles = getStoredArticles();
+
+    // Find the article with the requested ID
+    const article = articles.find(
+      article => article.id === articleId
+    );
+
+    // Article does not exist
+    if (!article) {
+      return res.status(404).json({
+        error: 'Article not found.'
+      });
+    }
+
+    // Return the requested article
+    res.json(article);
+
+  } catch (error) {
+    console.error('Error fetching article:', error);
+
+    res.status(500).json({
+      error: 'Unable to load article.'
+    });
+  }
+});
+
+// --------------------------------------------------
+// API: POST a new article
+// --------------------------------------------------
+
+app.post('/api/articles', (req, res) => {
+  try {
+    const { title, author, content } = req.body;
+
+    // Validate required fields
+    if (!title || !content) {
+      return res.status(400).json({
+        error: 'Title and content are required.'
+      });
+    }
+
+    const newArticle = {
+      id: Date.now(),
+      title: title.trim(),
+      author: author?.trim() || 'Anonymous Curator',
+      content: content.trim(),
+      date: new Date().toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      })
+    };
+
+    const articles = getStoredArticles();
+
+    // Add newest article to the beginning
+    articles.unshift(newArticle);
+
+    saveArticles(articles);
+
+    res.status(201).json({
+      success: true,
+      message: 'Article created successfully.',
+      article: newArticle
+    });
+
+  } catch (error) {
+    console.error('Error creating article:', error);
+
+    res.status(500).json({
+      error: 'Unable to create article.'
+    });
+  }
+});
+
+// --------------------------------------------------
+// API: PUT (update) an existing article
+// --------------------------------------------------
+
+app.put('/api/articles/:id', (req, res) => {
+  try {
+    const articleId = Number(req.params.id);
+
+    // Validate the article ID
+    if (Number.isNaN(articleId)) {
+      return res.status(400).json({
+        error: 'Invalid article ID.'
+      });
+    }
+
+    const { title, author, content } = req.body;
+
+    // Validate required fields
+    if (!title || !content) {
+      return res.status(400).json({
+        error: 'Title and content are required.'
+      });
+    }
+
+    const articles = getStoredArticles();
+
+    // Find the article
+    const articleIndex = articles.findIndex(
+      article => article.id === articleId
+    );
+
+    // Article doesn't exist
+    if (articleIndex === -1) {
+      return res.status(404).json({
+        error: 'Article not found.'
+      });
+    }
+
+    // Update the article
+    const updatedArticle = {
+      ...articles[articleIndex],
+      title: title.trim(),
+      author: author?.trim() || 'Anonymous Curator',
+      content: content.trim(),
+      updatedAt: new Date().toISOString()
+    };
+
+    // Replace the old article
+    articles[articleIndex] = updatedArticle;
+
+    // Save changes
+    saveArticles(articles);
+
+    // Return updated article
+    res.json({
+      success: true,
+      message: 'Article updated successfully.',
+      article: updatedArticle
+    });
+
+  } catch (error) {
+    console.error('Error updating article:', error);
+
+    res.status(500).json({
+      error: 'Unable to update article.'
+    });
+  }
+});
+
+// --------------------------------------------------
+// API: DELETE an article
+// --------------------------------------------------
+
+app.delete('/api/articles/:id', (req, res) => {
+  try {
+    const articleId = Number(req.params.id);
+
+    // Make sure the ID is a valid number
+    if (Number.isNaN(articleId)) {
+      return res.status(400).json({
+        error: 'Invalid article ID.'
+      });
+    }
+
+    const articles = getStoredArticles();
+
+    // Find the article first
+    const articleExists = articles.some(
+      article => article.id === articleId
+    );
+
+    if (!articleExists) {
+      return res.status(404).json({
+        error: 'Article not found.'
+      });
+    }
+
+    // Remove the article
+    const updatedArticles = articles.filter(
+      article => article.id !== articleId
+    );
+
+    saveArticles(updatedArticles);
+
+    res.json({
+      success: true,
+      message: 'Article deleted successfully.'
+    });
+
+  } catch (error) {
+    console.error('Error deleting article:', error);
+
+    res.status(500).json({
+      error: 'Unable to delete article.'
+    });
+  }
+});
+
+// --------------------------------------------------
+// 404 handler
+// --------------------------------------------------
+
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Route not found.'
+  });
+});
+
+// --------------------------------------------------
+// Start server
+// --------------------------------------------------
+
 app.listen(PORT, () => {
-  console.log(`Server is running smoothly at http://localhost:${PORT}`);
+  console.log(
+    `Server is running smoothly at http://localhost:${PORT}`
+  );
 });
