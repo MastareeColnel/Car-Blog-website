@@ -51,8 +51,19 @@ async function fetchArticles() {
                 </h2>
 
                 <p class="blog-post-meta text-muted small fst-italic">
-                    ${escapeHtml(article.date)} by ${escapeHtml(article.author)}
-                </p>
+    Published ${escapeHtml(article.date)} by ${escapeHtml(article.author)}
+    ${
+        article.updatedAt
+            ? `<br>Last updated ${escapeHtml(
+                new Date(article.updatedAt).toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric'
+                })
+            )}`
+            : ''
+    }
+</p>
 
                 <p>
                     ${escapeHtml(article.content)}
@@ -134,9 +145,8 @@ async function deleteArticle(articleId) {
 }
 
 // --------------------------------------------------
-// View Article
-// Loads a selected article and displays it in the
-// Read Story modal.
+// View a single article
+// Loads the article and displays it in the view modal.
 // --------------------------------------------------
 
 async function viewArticle(articleId) {
@@ -149,20 +159,26 @@ async function viewArticle(articleId) {
             throw new Error(article.error || 'Article not found.');
         }
 
-        document.getElementById('viewArticleTitle').textContent =
-            article.title;
+        // Put the article title into the article title area.
+document.getElementById('viewArticleTitle').textContent =
+    article.title;
 
+        // Put the author and date into the modal.
         document.getElementById('viewArticleMeta').textContent =
             `${article.date} by ${article.author}`;
 
+        // Put the article content into the modal.
         document.getElementById('viewArticleContent').textContent =
             article.content;
 
+        // Create the Bootstrap modal.
         const modalElement =
             document.getElementById('viewArticleModal');
 
-        const modal = new bootstrap.Modal(modalElement);
+        const modal =
+            bootstrap.Modal.getOrCreateInstance(modalElement);
 
+        // Display the modal.
         modal.show();
 
     } catch (error) {

@@ -64,6 +64,7 @@ const saveArticles = (articles) => {
   );
 };
 
+
 // --------------------------------------------------
 // Pages
 // --------------------------------------------------
@@ -79,6 +80,7 @@ app.get('/', (req, res) => {
 
 app.get('/api/articles', (req, res) => {
   try {
+    // Get all articles from the JSON file
     const articles = getStoredArticles();
 
     res.json(articles);
