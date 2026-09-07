@@ -80,9 +80,10 @@ app.get('/', (req, res) => {
 
 app.get('/api/articles', (req, res) => {
   try {
-    // Get all articles from the JSON file
+    // Use Get API to call and retrieve all stored articles from the JSON file.
     const articles = getStoredArticles();
 
+    //Respond with articles in JSON Format.
     res.json(articles);
   } catch (error) {
     console.error('Error fetching articles:', error);

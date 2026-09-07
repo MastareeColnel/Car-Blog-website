@@ -66,7 +66,11 @@
                 <h3 class="pb-4 mb-4 fst-italic border-bottom font-georgia">
                     Latest Stories
                 </h3>
+                <!-- Messages related to article actions appear here -->
+            <div id="articlesMessage"></div>
 
+            <div id="dynamic-articles-list"></div>
+            
                 <!-- Dynamic articles loaded from our JSON file appear here -->
                 <div id="dynamic-articles-list"></div>
 
@@ -114,8 +118,13 @@
                 <!-- Content Submission Form Section (Nested cleanly inside left column) -->
                 <section id="submit-story" class="my-5 pt-4 border-top">
                     <div class="p-4 bg-white border rounded shadow-sm">
+                        <!-- Article submission form -->
                         <h3 class="font-georgia mb-3 h4">Submit a New Story</h3>
-                        <form action="/api/articles" method="POST">
+                        
+                        <!-- Success and error messages appear here -->
+                        <div id="articleMessage"></div>
+
+                        <form id="articleForm">
                             <div class="mb-3">
                                 <label for="title" class="form-label small">Article Title</label>
                                 <input type="text" class="form-control form-control-sm" id="title" name="title" required placeholder="e.g., The Evolution of Touring Cars">
@@ -212,6 +221,11 @@
             </div>
 
             <div class="modal-body">
+
+    <!-- Update success or error messages appear here -->
+            <div id="editArticleMessage"></div>
+
+                <form id="editArticleForm">
 
                 <form id="editArticleForm">
 

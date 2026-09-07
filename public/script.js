@@ -132,10 +132,26 @@ async function deleteArticle(articleId) {
             throw new Error(result.error || 'Failed to delete article.');
         }
 
-        alert('Article deleted successfully.');
+        // Display success message on the page
+const messageContainer = document.getElementById('articlesMessage');
 
-        // Refresh the article list
+messageContainer.innerHTML = `
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        Article deleted successfully!
+        <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+            aria-label="Close">
+        </button>
+    </div>
+`;
+
+        // Wait briefly so the user can see the success message
+    setTimeout(() => {
+        modal.hide();
         fetchArticles();
+        }, 1500);
 
     } catch (error) {
         console.error('Error deleting article:', error);
@@ -251,13 +267,26 @@ document.getElementById('editArticleForm').addEventListener('submit', async (eve
             throw new Error(result.error || 'Failed to update article.');
         }
 
-        alert('Article updated successfully.');
+        // Display success message inside the edit modal
+const messageContainer = document.getElementById('editArticleMessage');
+
+messageContainer.innerHTML = `
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        Article updated successfully!
+        <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+            aria-label="Close">
+        </button>
+    </div>
+`;
 
         const modalElement = document.getElementById('editArticleModal');
 
         const modal = bootstrap.Modal.getInstance(modalElement);
 
-        modal.hide();
+        //modal.hide();
 
         fetchArticles();
 
@@ -265,6 +294,65 @@ document.getElementById('editArticleForm').addEventListener('submit', async (eve
         console.error('Error updating article:', error);
 
         alert(`Unable to update article: ${error.message}`);
+    }
+});
+
+// --------------------------------------------------
+// Submit a new article
+// Sends form data to the API without leaving the homepage.
+// --------------------------------------------------
+
+document.getElementById('articleForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const title = document.getElementById('title').value;
+    const author = document.getElementById('author').value;
+    const content = document.getElementById('content').value;
+
+    try {
+        const response = await fetch('/api/articles', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                title,
+                author,
+                content
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || 'Failed to publish article.');
+        }
+
+        // Display success message on the page
+const messageContainer = document.getElementById('articleMessage');
+
+messageContainer.innerHTML = `
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        Article published successfully!
+        <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+            aria-label="Close">
+        </button>
+    </div>
+`;
+
+        // Clear the form
+        document.getElementById('articleForm').reset();
+
+        // Refresh the article list
+        fetchArticles();
+
+    } catch (error) {
+        console.error('Error publishing article:', error);
+
+        alert(`Unable to publish article: ${error.message}`);
     }
 });
 
