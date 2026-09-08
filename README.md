@@ -56,3 +56,65 @@ my-express-project/
 * `package.json` - Contains project dependencies and configuration.
 * `README.md` - Provides documentation for the project.
 
+## Installation
+
+To run this project locally, follow these steps:
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/MastareeColnel/Car-Blog-website.git
+```
+
+### 2. Navigate to the project directory
+
+```bash
+cd Car-Blog-website
+```
+
+### 3. Install dependencies
+
+```bash
+npm install
+```
+
+### 4. Start the application
+
+```bash
+node server.js
+```
+
+The application will start on:
+
+```text
+http://localhost:3000
+```
+
+Open the address in your browser to use the application.
+
+## How the Application Works
+
+The frontend communicates with the Express backend through API requests.
+
+```text
+User Interface
+      |
+      v
+JavaScript (script.js)
+      |
+      v
+Express API (server.js)
+      |
+      v
+articles.json
+```
+
+The application uses the following CRUD operations:
+
+* `POST /api/articles` - Create a new article
+* `GET /api/articles` - Retrieve all articles
+* `GET /api/articles/:id` - Retrieve a single article
+* `PUT /api/articles/:id` - Update an article
+* `DELETE /api/articles/:id` - Delete an article
+
+
