@@ -132,31 +132,23 @@ async function deleteArticle(articleId) {
             throw new Error(result.error || 'Failed to delete article.');
         }
 
-        // Display success message on the page
-const messageContainer = document.getElementById('articlesMessage');
+        // Display success message
+        showMessage(
+            'articlesMessage',
+            'Article deleted successfully!'
+        );
 
-messageContainer.innerHTML = `
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        Article deleted successfully!
-        <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="alert"
-            aria-label="Close">
-        </button>
-    </div>
-`;
-
-        // Wait briefly so the user can see the success message
-    setTimeout(() => {
-        modal.hide();
+        // Refresh the article list
         fetchArticles();
-        }, 1500);
 
     } catch (error) {
         console.error('Error deleting article:', error);
 
-        alert(`Unable to delete article: ${error.message}`);
+        showMessage(
+            'articlesMessage',
+            `Unable to delete article: ${error.message}`,
+            'danger'
+        );
     }
 }
 
@@ -267,33 +259,29 @@ document.getElementById('editArticleForm').addEventListener('submit', async (eve
             throw new Error(result.error || 'Failed to update article.');
         }
 
-        // Display success message inside the edit modal
-const messageContainer = document.getElementById('editArticleMessage');
+    // Display success message inside the edit modal
+showMessage(
+    'editArticleMessage',
+    'Article updated successfully!'
+);
 
-messageContainer.innerHTML = `
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        Article updated successfully!
-        <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="alert"
-            aria-label="Close">
-        </button>
-    </div>
-`;
+const modalElement = document.getElementById('editArticleModal');
 
-        const modalElement = document.getElementById('editArticleModal');
+const modal = bootstrap.Modal.getInstance(modalElement);
 
-        const modal = bootstrap.Modal.getInstance(modalElement);
-
-        //modal.hide();
-
-        fetchArticles();
-
+// Wait briefly so the user can see the success message
+setTimeout(() => {
+    modal.hide();
+    fetchArticles();
+}, 1500);
     } catch (error) {
         console.error('Error updating article:', error);
 
-        alert(`Unable to update article: ${error.message}`);
+        showMessage(
+            'editArticleMessage',
+            `Unable to update article: ${error.message}`,
+            'danger'
+        );
     }
 });
 
@@ -329,19 +317,10 @@ document.getElementById('articleForm').addEventListener('submit', async (event) 
         }
 
         // Display success message on the page
-const messageContainer = document.getElementById('articleMessage');
-
-messageContainer.innerHTML = `
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        Article published successfully!
-        <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="alert"
-            aria-label="Close">
-        </button>
-    </div>
-`;
+    showMessage(
+        'articleMessage',
+        'Article published successfully!'
+);
 
         // Clear the form
         document.getElementById('articleForm').reset();
@@ -355,6 +334,32 @@ messageContainer.innerHTML = `
         alert(`Unable to publish article: ${error.message}`);
     }
 });
+
+// --------------------------------------------------
+// Display reusable notification messages
+// Automatically removes messages after a few seconds.
+// --------------------------------------------------
+
+function showMessage(containerId, message, type = 'success') {
+    const messageContainer = document.getElementById(containerId);
+
+    messageContainer.innerHTML = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Close">
+            </button>
+        </div>
+    `;
+
+    // Automatically remove the message after 3 seconds
+    setTimeout(() => {
+        messageContainer.innerHTML = '';
+    }, 3000);
+}
 
 // --------------------------------------------------
 // Simple helper to prevent HTML injection
