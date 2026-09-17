@@ -124,11 +124,21 @@ function displayArticles(articles) {
     // Find the article container
     const container =
         document.getElementById('dynamic-articles-list');
+        // Find the result count element
+    const resultCount =
+     document.getElementById('articleResultCount');
 
     if (!container) {
         console.error('Article container not found.');
         return;
+    
     }
+
+    // Update the number of displayed articles
+    if (resultCount) {
+        resultCount.textContent =
+        `Showing ${articles.length} ${articles.length === 1 ? 'story' : 'stories'}`;
+}
 
     // Clear the current article list
     container.innerHTML = '';
@@ -176,9 +186,13 @@ function displayArticles(articles) {
                 }
             </p>
 
-            <p>
-                ${escapeHtml(article.content)}
-            </p>
+                    <p>
+                     ${escapeHtml(
+                    article.content.length > 220
+                    ? article.content.substring(0, 220) + '...'
+                    : article.content
+                         )}
+                    </p>
 
             <div class="mt-3">
 
