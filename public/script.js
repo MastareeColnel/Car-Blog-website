@@ -153,50 +153,6 @@ async function deleteArticle(articleId) {
 }
 
 // --------------------------------------------------
-// View a single article
-// Loads the article and displays it in the view modal.
-// --------------------------------------------------
-
-async function viewArticle(articleId) {
-    try {
-        const response = await fetch(`/api/articles/${articleId}`);
-
-        const article = await response.json();
-
-        if (!response.ok) {
-            throw new Error(article.error || 'Article not found.');
-        }
-
-        // Put the article title into the article title area.
-document.getElementById('viewArticleTitle').textContent =
-    article.title;
-
-        // Put the author and date into the modal.
-        document.getElementById('viewArticleMeta').textContent =
-            `${article.date} by ${article.author}`;
-
-        // Put the article content into the modal.
-        document.getElementById('viewArticleContent').textContent =
-            article.content;
-
-        // Create the Bootstrap modal.
-        const modalElement =
-            document.getElementById('viewArticleModal');
-
-        const modal =
-            bootstrap.Modal.getOrCreateInstance(modalElement);
-
-        // Display the modal.
-        modal.show();
-
-    } catch (error) {
-        console.error('Error loading article:', error);
-
-        alert(`Unable to load article: ${error.message}`);
-    }
-}
-
-// --------------------------------------------------
 // Edit an article
 // --------------------------------------------------
 

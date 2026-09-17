@@ -69,10 +69,8 @@
                 <!-- Messages related to article actions appear here -->
             <div id="articlesMessage"></div>
 
-            <div id="dynamic-articles-list"></div>
-            
-                <!-- Dynamic articles loaded from our JSON file appear here -->
-                <div id="dynamic-articles-list"></div>
+            <!-- Dynamic articles loaded from PostgreSQL appear here -->
+             <div id="dynamic-articles-list"> </div>
 
                 <!-- Article 1 -->
                 <article class="blog-post mb-5">
@@ -225,9 +223,7 @@
     <!-- Update success or error messages appear here -->
             <div id="editArticleMessage"></div>
 
-                <form id="editArticleForm">
-
-                <form id="editArticleForm">
+            <form id="editArticleForm">
 
                     <input
                         type="hidden"
@@ -299,66 +295,6 @@
         </div>
     </div>
 
-</div>
-
-<!-- View Article Modal -->
-<div
-    class="modal fade"
-    id="viewArticleModal"
-    tabindex="-1"
-    aria-labelledby="viewArticleModalLabel"
-    aria-hidden="true">
-
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-
-            <div class="modal-header">
-                <h5
-                    class="modal-title font-georgia"
-                    id="viewArticleModalLabel">
-                    Article
-                </h5>
-
-                <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="modal"
-                    aria-label="Close">
-                </button>
-            </div>
-
-            <div class="modal-body">
-
-                <h2
-                    id="viewArticleTitle"
-                    class="font-georgia mb-2">
-                </h2>
-
-                <p
-                    id="viewArticleMeta"
-                    class="text-muted small fst-italic mb-4">
-                </p>
-
-                <div
-                    id="viewArticleContent"
-                    class="article-reading-content">
-                </div>
-
-            </div>
-
-            <div class="modal-footer">
-
-                <button
-                    type="button"
-                    class="btn btn-dark"
-                    data-bs-dismiss="modal">
-                    Close
-                </button>
-
-            </div>
-
-        </div>
-    </div>
 </div>
 
 
