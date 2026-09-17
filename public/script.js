@@ -70,11 +70,11 @@ async function fetchArticles() {
                 </p>
 
                 <div class="mt-3">
-                    <button
-                        onclick="viewArticle(${article.id})"
-                        class="btn btn-sm btn-primary me-2">
-                        Read Story
-                    </button>
+            <a
+               href="/articles/${article.id}"
+                class="btn btn-sm btn-primary me-2">
+                Read Story
+            </a>
 
                     <button
                         onclick="editArticle(${article.id})"

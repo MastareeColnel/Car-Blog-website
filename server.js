@@ -30,6 +30,15 @@ app.get('/', (req, res) => {
 });
 
 // --------------------------------------------------
+// Article page
+// --------------------------------------------------
+
+// Display the page for a single article
+app.get('/articles/:id', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'article.html'));
+});
+
+// --------------------------------------------------
 // API: GET all articles
 // --------------------------------------------------
 
