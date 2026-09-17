@@ -1,9 +1,46 @@
+// Store the articles currently loaded from PostgreSQL
+let allArticles = [];
+
+// --------------------------------------------------
+// Start the homepage functionality
+// Loads articles and connects the search box.
+// --------------------------------------------------
+
 document.addEventListener('DOMContentLoaded', () => {
+
+    // Load the articles
     fetchArticles();
+
+    // Connect the search box
+    const searchInput =
+        document.getElementById('articleSearch');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            searchArticles(searchInput.value);
+        });
+    }
 });
 
 // --------------------------------------------------
+// Search input
+// Connects the search box to the article filtering.
+// --------------------------------------------------
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    const searchInput =
+        document.getElementById('articleSearch');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            searchArticles(searchInput.value);
+        });
+    }
+});
+// --------------------------------------------------
 // Fetch and display all articles
+// Loads articles from PostgreSQL.
 // --------------------------------------------------
 
 async function fetchArticles() {
@@ -16,87 +53,17 @@ async function fetchArticles() {
 
         const articles = await response.json();
 
-        const container = document.getElementById('dynamic-articles-list');
+        // Keep a copy of the articles for searching
+        allArticles = articles;
 
-        if (!container) {
-            console.error('Article container not found.');
-            return;
-        }
-
-        container.innerHTML = '';
-
-        // No articles
-        if (articles.length === 0) {
-            container.innerHTML = `
-                <div class="alert alert-secondary">
-                    No articles have been published yet.
-                </div>
-            `;
-            return;
-        }
-
-        articles.forEach(article => {
-            const articleElement = document.createElement('article');
-
-            articleElement.className =
-                'blog-post mb-5 p-4 bg-white border rounded shadow-sm';
-
-            articleElement.innerHTML = `
-                <span class="badge bg-dark text-warning mb-2">
-                    Reader Submission
-                </span>
-
-                <h2 class="blog-post-title mb-1 h3 text-dark">
-                    ${escapeHtml(article.title)}
-                </h2>
-
-                <p class="blog-post-meta text-muted small fst-italic">
-    Published ${escapeHtml(article.date)} by ${escapeHtml(article.author)}
-    ${
-        article.updatedAt
-            ? `<br>Last updated ${escapeHtml(
-                new Date(article.updatedAt).toLocaleDateString('en-US', {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric'
-                })
-            )}`
-            : ''
-    }
-</p>
-
-                <p>
-                    ${escapeHtml(article.content)}
-                </p>
-
-                <div class="mt-3">
-            <a
-               href="/articles/${article.id}"
-                class="btn btn-sm btn-primary me-2">
-                Read Story
-            </a>
-
-                    <button
-                        onclick="editArticle(${article.id})"
-                        class="btn btn-sm btn-outline-secondary me-2">
-                        Edit
-                    </button>
-
-                    <button
-                        onclick="deleteArticle(${article.id})"
-                        class="btn btn-sm btn-outline-danger">
-                        Delete Story
-                    </button>
-                </div>
-            `;
-
-            container.appendChild(articleElement);
-        });
+        // Display the articles on the page
+        displayArticles(articles);
 
     } catch (error) {
         console.error('Error loading stored articles:', error);
 
-        const container = document.getElementById('dynamic-articles-list');
+        const container =
+            document.getElementById('dynamic-articles-list');
 
         if (container) {
             container.innerHTML = `
@@ -109,10 +76,143 @@ async function fetchArticles() {
 }
 
 // --------------------------------------------------
+// Search articles
+// Filters articles by title, author, or content.
+// --------------------------------------------------
+
+function searchArticles(searchTerm) {
+
+    // Convert the search term to lowercase
+    const term = searchTerm.toLowerCase().trim();
+
+    // Show all articles when the search box is empty
+    if (!term) {
+        displayArticles(allArticles);
+        return;
+    }
+
+    // Find articles matching the search term
+    const matchingArticles = allArticles.filter(article => {
+
+        const title =
+            String(article.title || '').toLowerCase();
+
+        const author =
+            String(article.author || '').toLowerCase();
+
+        const content =
+            String(article.content || '').toLowerCase();
+
+        return (
+            title.includes(term) ||
+            author.includes(term) ||
+            content.includes(term)
+        );
+    });
+
+    // Display only matching articles
+    displayArticles(matchingArticles);
+}
+
+// --------------------------------------------------
+// Display articles
+// Creates the article cards shown on the homepage.
+// --------------------------------------------------
+
+function displayArticles(articles) {
+
+    // Find the article container
+    const container =
+        document.getElementById('dynamic-articles-list');
+
+    if (!container) {
+        console.error('Article container not found.');
+        return;
+    }
+
+    // Clear the current article list
+    container.innerHTML = '';
+
+    // Show a message when there are no matching articles
+    if (articles.length === 0) {
+        container.innerHTML = `
+            <div class="alert alert-secondary">
+                No matching articles found.
+            </div>
+        `;
+        return;
+    }
+
+    // Create an article card for each article
+    articles.forEach(article => {
+
+        const articleElement =
+            document.createElement('article');
+
+        articleElement.className =
+            'blog-post mb-5 p-4 bg-white border rounded shadow-sm';
+
+        articleElement.innerHTML = `
+            <span class="badge bg-dark text-warning mb-2">
+                Reader Submission
+            </span>
+
+            <h2 class="blog-post-title mb-1 h3 text-dark">
+                ${escapeHtml(article.title)}
+            </h2>
+
+            <p class="blog-post-meta text-muted small fst-italic">
+                Published ${escapeHtml(article.date)} by ${escapeHtml(article.author)}
+                ${
+                    article.updatedAt
+                        ? `<br>Last updated ${escapeHtml(
+                            new Date(article.updatedAt).toLocaleDateString('en-US', {
+                                month: 'long',
+                                day: 'numeric',
+                                year: 'numeric'
+                            })
+                        )}`
+                        : ''
+                }
+            </p>
+
+            <p>
+                ${escapeHtml(article.content)}
+            </p>
+
+            <div class="mt-3">
+
+                <a
+                    href="/articles/${article.id}"
+                    class="btn btn-sm btn-primary me-2">
+                    Read Story
+                </a>
+
+                <button
+                    onclick="editArticle(${article.id})"
+                    class="btn btn-sm btn-outline-secondary me-2">
+                    Edit
+                </button>
+
+                <button
+                    onclick="deleteArticle(${article.id})"
+                    class="btn btn-sm btn-outline-danger">
+                    Delete Story
+                </button>
+
+            </div>
+        `;
+
+        container.appendChild(articleElement);
+    });
+}
+
+// --------------------------------------------------
 // Delete an article
 // --------------------------------------------------
 
 async function deleteArticle(articleId) {
+
     const confirmed = confirm(
         'Are you sure you want to delete this article? This action cannot be undone.'
     );
@@ -129,7 +229,9 @@ async function deleteArticle(articleId) {
         const result = await response.json();
 
         if (!response.ok) {
-            throw new Error(result.error || 'Failed to delete article.');
+            throw new Error(
+                result.error || 'Failed to delete article.'
+            );
         }
 
         // Display success message
@@ -157,147 +259,210 @@ async function deleteArticle(articleId) {
 // --------------------------------------------------
 
 async function editArticle(articleId) {
+
     try {
-        const response = await fetch(`/api/articles/${articleId}`);
+        const response =
+            await fetch(`/api/articles/${articleId}`);
 
         const article = await response.json();
 
         if (!response.ok) {
-            throw new Error(article.error || 'Article not found.');
+            throw new Error(
+                article.error || 'Article not found.'
+            );
         }
 
-        document.getElementById('editArticleId').value = article.id;
-        document.getElementById('editTitle').value = article.title;
-        document.getElementById('editAuthor').value = article.author;
-        document.getElementById('editContent').value = article.content;
+        // Fill the edit form with the article data
+        document.getElementById('editArticleId').value =
+            article.id;
 
-        const modalElement = document.getElementById('editArticleModal');
+        document.getElementById('editTitle').value =
+            article.title;
 
-        const modal = new bootstrap.Modal(modalElement);
+        document.getElementById('editAuthor').value =
+            article.author;
+
+        document.getElementById('editContent').value =
+            article.content;
+
+        // Open the edit modal
+        const modalElement =
+            document.getElementById('editArticleModal');
+
+        const modal =
+            new bootstrap.Modal(modalElement);
 
         modal.show();
 
     } catch (error) {
-        console.error('Error loading article for editing:', error);
+        console.error(
+            'Error loading article for editing:',
+            error
+        );
 
-        alert(`Unable to load article for editing: ${error.message}`);
+        alert(
+            `Unable to load article for editing: ${error.message}`
+        );
     }
 }
 
 // --------------------------------------------------
-// Save, Update an article
+// Save, update an article
 // --------------------------------------------------
-document.getElementById('editArticleForm').addEventListener('submit', async (event) => {
-    event.preventDefault();
 
-    const articleId = document.getElementById('editArticleId').value;
+document
+    .getElementById('editArticleForm')
+    .addEventListener('submit', async (event) => {
 
-    const title = document.getElementById('editTitle').value;
-    const author = document.getElementById('editAuthor').value;
-    const content = document.getElementById('editContent').value;
+        event.preventDefault();
 
-    try {
-        const response = await fetch(`/api/articles/${articleId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                title,
-                author,
-                content
-            })
-        });
+        const articleId =
+            document.getElementById('editArticleId').value;
 
-        const result = await response.json();
+        const title =
+            document.getElementById('editTitle').value;
 
-        if (!response.ok) {
-            throw new Error(result.error || 'Failed to update article.');
+        const author =
+            document.getElementById('editAuthor').value;
+
+        const content =
+            document.getElementById('editContent').value;
+
+        try {
+            const response =
+                await fetch(`/api/articles/${articleId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title,
+                        author,
+                        content
+                    })
+                });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.error || 'Failed to update article.'
+                );
+            }
+
+            // Display success message inside the edit modal
+            showMessage(
+                'editArticleMessage',
+                'Article updated successfully!'
+            );
+
+            const modalElement =
+                document.getElementById('editArticleModal');
+
+            const modal =
+                bootstrap.Modal.getInstance(modalElement);
+
+            // Wait briefly so the user can see the success message
+            setTimeout(() => {
+                modal.hide();
+                fetchArticles();
+            }, 1500);
+
+        } catch (error) {
+            console.error(
+                'Error updating article:',
+                error
+            );
+
+            showMessage(
+                'editArticleMessage',
+                `Unable to update article: ${error.message}`,
+                'danger'
+            );
         }
-
-    // Display success message inside the edit modal
-showMessage(
-    'editArticleMessage',
-    'Article updated successfully!'
-);
-
-const modalElement = document.getElementById('editArticleModal');
-
-const modal = bootstrap.Modal.getInstance(modalElement);
-
-// Wait briefly so the user can see the success message
-setTimeout(() => {
-    modal.hide();
-    fetchArticles();
-}, 1500);
-    } catch (error) {
-        console.error('Error updating article:', error);
-
-        showMessage(
-            'editArticleMessage',
-            `Unable to update article: ${error.message}`,
-            'danger'
-        );
-    }
-});
+    });
 
 // --------------------------------------------------
 // Submit a new article
 // Sends form data to the API without leaving the homepage.
 // --------------------------------------------------
 
-document.getElementById('articleForm').addEventListener('submit', async (event) => {
-    event.preventDefault();
+document
+    .getElementById('articleForm')
+    .addEventListener('submit', async (event) => {
 
-    const title = document.getElementById('title').value;
-    const author = document.getElementById('author').value;
-    const content = document.getElementById('content').value;
+        event.preventDefault();
 
-    try {
-        const response = await fetch('/api/articles', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                title,
-                author,
-                content
-            })
-        });
+        const title =
+            document.getElementById('title').value;
 
-        const result = await response.json();
+        const author =
+            document.getElementById('author').value;
 
-        if (!response.ok) {
-            throw new Error(result.error || 'Failed to publish article.');
+        const content =
+            document.getElementById('content').value;
+
+        try {
+            const response =
+                await fetch('/api/articles', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title,
+                        author,
+                        content
+                    })
+                });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.error || 'Failed to publish article.'
+                );
+            }
+
+            // Display success message on the page
+            showMessage(
+                'articleMessage',
+                'Article published successfully!'
+            );
+
+            // Clear the form
+            document
+                .getElementById('articleForm')
+                .reset();
+
+            // Refresh the article list
+            fetchArticles();
+
+        } catch (error) {
+            console.error(
+                'Error publishing article:',
+                error
+            );
+
+            alert(
+                `Unable to publish article: ${error.message}`
+            );
         }
-
-        // Display success message on the page
-    showMessage(
-        'articleMessage',
-        'Article published successfully!'
-);
-
-        // Clear the form
-        document.getElementById('articleForm').reset();
-
-        // Refresh the article list
-        fetchArticles();
-
-    } catch (error) {
-        console.error('Error publishing article:', error);
-
-        alert(`Unable to publish article: ${error.message}`);
-    }
-});
+    });
 
 // --------------------------------------------------
 // Display reusable notification messages
 // Automatically removes messages after a few seconds.
 // --------------------------------------------------
 
-function showMessage(containerId, message, type = 'success') {
-    const messageContainer = document.getElementById(containerId);
+function showMessage(
+    containerId,
+    message,
+    type = 'success'
+) {
+
+    const messageContainer =
+        document.getElementById(containerId);
 
     messageContainer.innerHTML = `
         <div class="alert alert-${type} alert-dismissible fade show" role="alert">
