@@ -150,7 +150,35 @@
                                 <label for="author" class="form-label small">Author Name</label>
                                 <input type="text" class="form-control form-control-sm" id="author" name="author" placeholder="e.g., Lord Sterling">
                             </div>
-                            <div class="mb-3">
+
+
+<!-- Article category -->
+<div class="mb-3">
+    <label for="articleCategory" class="form-label small">
+        Category
+    </label>
+
+    <select
+        id="articleCategory"
+        name="category"
+        class="form-select form-select-sm"
+        required>
+
+        <option value="" selected disabled>
+            Select a category
+        </option>
+
+        <option value="Classic Cars">Classic Cars</option>
+        <option value="Modern Cars">Modern Cars</option>
+        <option value="Motorsport">Motorsport</option>
+        <option value="Technology">Technology</option>
+        <option value="Electric Vehicles">Electric Vehicles</option>
+        <option value="Car Culture">Car Culture</option>
+    </select>
+</div>
+
+                         
+                <div class="mb-3">
                                 <label for="content" class="form-label small">Story Content</label>
                                 <textarea class="form-control form-control-sm" id="content" name="content" rows="3" required placeholder="Write your automotive chronicle here..."></textarea>
                             </div>
@@ -275,7 +303,34 @@
                             id="editAuthor">
                     </div>
 
-                    <div class="mb-3">
+
+<!-- Article category -->
+<div class="mb-3">
+    <label
+        for="editCategory"
+        class="form-label">
+        Category
+    </label>
+
+    <select
+        class="form-select"
+        id="editCategory"
+        required>
+
+        <option value="" disabled>
+            Select a category
+        </option>
+
+        <option value="Classic Cars">Classic Cars</option>
+        <option value="Modern Cars">Modern Cars</option>
+        <option value="Motorsport">Motorsport</option>
+        <option value="Technology">Technology</option>
+        <option value="Electric Vehicles">Electric Vehicles</option>
+        <option value="Car Culture">Car Culture</option>
+    </select>
+</div>
+
+            <div class="mb-3">
                         <label
                             for="editContent"
                             class="form-label">

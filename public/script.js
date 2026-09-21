@@ -287,17 +287,21 @@ async function editArticle(articleId) {
         }
 
         // Fill the edit form with the article data
-        document.getElementById('editArticleId').value =
-            article.id;
+document.getElementById('editArticleId').value =
+    article.id;
 
-        document.getElementById('editTitle').value =
-            article.title;
+document.getElementById('editTitle').value =
+    article.title;
 
-        document.getElementById('editAuthor').value =
-            article.author;
+document.getElementById('editAuthor').value =
+    article.author;
 
-        document.getElementById('editContent').value =
-            article.content;
+// Set the existing article category
+document.getElementById('editCategory').value =
+    article.category || '';
+
+document.getElementById('editContent').value =
+    article.content;
 
         // Open the edit modal
         const modalElement =
@@ -342,6 +346,9 @@ document
         const content =
             document.getElementById('editContent').value;
 
+        const category =
+            document.getElementById('editCategory').value;
+
         try {
             const response =
                 await fetch(`/api/articles/${articleId}`, {
@@ -352,7 +359,8 @@ document
                     body: JSON.stringify({
                         title,
                         author,
-                        content
+                        content,
+                        category
                     })
                 });
 
@@ -416,6 +424,9 @@ document
         const content =
             document.getElementById('content').value;
 
+        const category =
+            document.getElementById('articleCategory').value;
+
         try {
             const response =
                 await fetch('/api/articles', {
@@ -426,7 +437,8 @@ document
                     body: JSON.stringify({
                         title,
                         author,
-                        content
+                        content,
+                        category
                     })
                 });
 

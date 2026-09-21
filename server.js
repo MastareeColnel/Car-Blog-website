@@ -44,24 +44,20 @@ app.get('/articles/:id', (req, res) => {
 
 app.get('/api/articles', async (req, res) => {
     try {
-        // Get all articles from PostgreSQL
-        const result = await pool.query(`
-            SELECT
-                id,
-                title,
-                author,
-                content,
-                date,
-                updated_at
-            FROM articles
-            ORDER BY date DESC
-        `);
+      
+        // Fetch all articles including their categories
+const result = await pool.query(`
+    SELECT id, title, author, content, date, updated_at, category
+    FROM articles
+    ORDER BY date DESC
+`);
         
-        // Convert database field name to the name used by the frontend
-        const articles = result.rows.map(article => ({
-            ...article,
-            updatedAt: article.updated_at
-        }));
+        // Convert database field names to the names used by the frontend
+const articles = result.rows.map(article => ({
+    ...article,
+    updatedAt: article.updated_at,
+    category: article.category
+}));
 
         // Send articles to the frontend
         res.json(articles);
@@ -131,7 +127,7 @@ app.get('/api/articles/:id', async (req, res) => {
 
 app.post('/api/articles', async (req, res) => {
     try {
-        const { title, author, content } = req.body;
+        const { title, author, content, category } = req.body;
 
         // Validate required fields
         if (!title || !content) {
@@ -147,29 +143,32 @@ app.post('/api/articles', async (req, res) => {
         const result = await pool.query(
             `
             INSERT INTO articles
-                (id, title, author, content, date)
+                (id, title, author, content, date, category)
             VALUES
-                ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+                ($1, $2, $3, $4, CURRENT_TIMESTAMP, $5)
             RETURNING
                 id,
                 title,
                 author,
                 content,
                 date,
-                updated_at
+                updated_at,
+                category
             `,
             [
                 articleId,
                 title.trim(),
                 author?.trim() || 'Anonymous Curator',
-                content.trim()
+                content.trim(),
+                category
             ]
         );
 
         // Convert database field name for the frontend
         const article = {
             ...result.rows[0],
-            updatedAt: result.rows[0].updated_at
+            updatedAt: result.rows[0].updated_at,
+            category: result.rows[0].category
         };
 
         // Return the newly created article
@@ -195,7 +194,7 @@ app.post('/api/articles', async (req, res) => {
 app.put('/api/articles/:id', async (req, res) => {
     try {
         const articleId = req.params.id;
-        const { title, author, content } = req.body;
+        const { title, author, content, category } = req.body;
 
         // Validate required fields
         if (!title || !content) {
@@ -212,20 +211,23 @@ app.put('/api/articles/:id', async (req, res) => {
                 title = $1,
                 author = $2,
                 content = $3,
+                category = $4,
                 updated_at = CURRENT_TIMESTAMP
-            WHERE id = $4
+            WHERE id = $5
             RETURNING
                 id,
                 title,
                 author,
                 content,
                 date,
-                updated_at
+                updated_at,
+                category
             `,
             [
                 title.trim(),
                 author?.trim() || 'Anonymous Curator',
                 content.trim(),
+                category,
                 articleId
             ]
         );
@@ -240,7 +242,8 @@ app.put('/api/articles/:id', async (req, res) => {
         // Convert database field name for the frontend
         const article = {
             ...result.rows[0],
-            updatedAt: result.rows[0].updated_at
+            updatedAt: result.rows[0].updated_at,
+            category: result.rows[0].category
         };
 
         // Return the updated article
