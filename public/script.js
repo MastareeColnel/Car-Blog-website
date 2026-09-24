@@ -20,7 +20,18 @@ document.addEventListener('DOMContentLoaded', () => {
             searchArticles(searchInput.value);
         });
     }
+
+    // Connect the category filter
+    const categoryFilter =
+        document.getElementById('categoryFilter');
+
+    if (categoryFilter) {
+        categoryFilter.addEventListener('change', () => {
+            searchArticles(searchInput ? searchInput.value : '');
+        });
+    }
 });
+
 
 // --------------------------------------------------
 // Search input
@@ -38,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
 // --------------------------------------------------
 // Fetch and display all articles
 // Loads articles from PostgreSQL.
@@ -45,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function fetchArticles() {
     try {
-        const response = await fetch('/api/articles');
+        const response = await fetch('https://car-blog-website.onrender.com/api/articles');
 
         if (!response.ok) {
             throw new Error('Failed to fetch articles.');
@@ -76,8 +88,8 @@ async function fetchArticles() {
 }
 
 // --------------------------------------------------
-// Search articles
-// Filters articles by title, author, or content.
+// Search and filter articles
+// Filters articles by search term and category.
 // --------------------------------------------------
 
 function searchArticles(searchTerm) {
@@ -85,13 +97,11 @@ function searchArticles(searchTerm) {
     // Convert the search term to lowercase
     const term = searchTerm.toLowerCase().trim();
 
-    // Show all articles when the search box is empty
-    if (!term) {
-        displayArticles(allArticles);
-        return;
-    }
+    // Get the selected category
+    const selectedCategory =
+        document.getElementById('categoryFilter').value;
 
-    // Find articles matching the search term
+    // Find articles matching both filters
     const matchingArticles = allArticles.filter(article => {
 
         const title =
@@ -103,14 +113,26 @@ function searchArticles(searchTerm) {
         const content =
             String(article.content || '').toLowerCase();
 
-        return (
+        const category =
+            String(article.category || '');
+
+        // Check whether the article matches the search
+        const matchesSearch =
+            !term ||
             title.includes(term) ||
             author.includes(term) ||
-            content.includes(term)
-        );
+            content.includes(term);
+
+        // Check whether the article matches the category
+        const matchesCategory =
+            !selectedCategory ||
+            category === selectedCategory;
+
+        // Article must pass both filters
+        return matchesSearch && matchesCategory;
     });
 
-    // Display only matching articles
+    // Display the filtered articles
     displayArticles(matchingArticles);
 }
 
@@ -164,7 +186,11 @@ function displayArticles(articles) {
 
         articleElement.innerHTML = `
             <span class="badge bg-dark text-warning mb-2">
-                Reader Submission
+                  Reader Submission
+            </span>
+            <!-- Article category -->
+            <span class="badge bg-secondary mb-2 ms-1">
+               ${escapeHtml(article.category || 'Uncategorized')}
             </span>
 
             <h2 class="blog-post-title mb-1 h3 text-dark">

@@ -66,7 +66,8 @@
                 <h3 class="pb-4 mb-4 fst-italic border-bottom font-georgia">
                     Latest Stories
                 </h3>
-            <!-- Article search -->
+
+  <!-- Article search -->
 <div class="mb-4">
     <label for="articleSearch" class="form-label small fw-bold">
         Search Stories
@@ -78,6 +79,20 @@
         class="form-control"
         placeholder="Search by title, author, or content..."
         autocomplete="off">
+
+        <!-- Category filter --> 
+         <label for="categoryFilter" class="form-label small fw-bold">
+             
+            Filter by Category </label> 
+            <select id="categoryFilter" class="form-select"> 
+                <option value="">All Categories</option> 
+                <option value="Classic Cars">Classic Cars</option> 
+                <option value="Modern Cars">Modern Cars</option> 
+                <option value="Motorsport">Motorsport</option> 
+                <option value="Technology">Technology</option> 
+                <option value="Electric Vehicles">Electric Vehicles</option> 
+                <option value="Car Culture">Car Culture</option> 
+            </select>
 </div>
 
 <!-- Article result count -->

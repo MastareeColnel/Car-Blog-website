@@ -1,9 +1,17 @@
 // Load required modules
 const express = require('express');
+
+// Enable cross-origin requests
+const cors = require('cors');
+
 const path = require('path');
 const pool = require('./config/db');
 
+// Create the Express application
 const app = express();
+
+// Allow requests from other origins
+app.use(cors());
 
 const PORT = process.env.PORT || 3000;
 
