@@ -118,13 +118,16 @@
                     </a>
                 </div>
 
-                <!-- Article -->
-                <article class="bg-white p-4 p-md-5 border rounded shadow-sm">
+                <!-- Article type and category -->
+<span class="badge bg-dark text-warning mb-3">
+    Reader Submission
+</span>
 
-                    <!-- Article category -->
-                    <span class="badge bg-dark text-warning mb-3">
-                        Reader Submission
-                    </span>
+<span
+    id="article-category"
+    class="badge bg-secondary mb-3 ms-1">
+    Loading category...
+</span>
 
                     <!-- Article title -->
                     <h1
@@ -204,7 +207,7 @@
 
                 // Request the article from our API
                 const response =
-                    await fetch(`/api/articles/${articleId}`);
+                    await fetch(`https://car-blog-website.onrender.com/api/articles/${articleId}`);
 
                 const article =
                     await response.json();
@@ -220,6 +223,10 @@
                 // Display the article title
                 document.getElementById('article-title').textContent =
                     article.title;
+
+                // Display the article category
+                document.getElementById('article-category').textContent =
+                article.category || 'Uncategorized';
 
 
                 // Build the article metadata

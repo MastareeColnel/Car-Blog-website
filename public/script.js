@@ -34,21 +34,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // --------------------------------------------------
-// Search input
-// Connects the search box to the article filtering.
+// Search and filter articles
+// Filters articles by text and category.
 // --------------------------------------------------
 
-document.addEventListener('DOMContentLoaded', () => {
+function searchArticles(searchTerm) {
 
-    const searchInput =
-        document.getElementById('articleSearch');
+    // Convert the search term to lowercase
+    const term = searchTerm.toLowerCase().trim();
 
-    if (searchInput) {
-        searchInput.addEventListener('input', () => {
-            searchArticles(searchInput.value);
-        });
-    }
-});
+    // Get the selected category
+    const selectedCategory =
+        document.getElementById('categoryFilter').value;
+
+    // Filter the complete article list
+    const matchingArticles = allArticles.filter(article => {
+
+        // Prepare searchable article fields
+        const title =
+            String(article.title || '').toLowerCase();
+
+        const author =
+            String(article.author || '').toLowerCase();
+
+        const content =
+            String(article.content || '').toLowerCase();
+
+        // Check whether the article matches the search
+        const matchesSearch =
+            !term ||
+            title.includes(term) ||
+            author.includes(term) ||
+            content.includes(term);
+
+        // Check whether the article matches the category
+        const matchesCategory =
+            !selectedCategory ||
+            article.category === selectedCategory;
+
+        // Article must pass both filters
+        return matchesSearch && matchesCategory;
+    });
+
+    // Display the filtered articles
+    displayArticles(matchingArticles);
+}
 
 // --------------------------------------------------
 // Fetch and display all articles

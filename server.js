@@ -41,6 +41,55 @@ app.get('/', (req, res) => {
 // Article page
 // --------------------------------------------------
 
+// Fetch one article by ID
+app.get('/api/articles/:id', async (req, res) => {
+    try {
+        // Get the article ID from the URL
+        const articleId = req.params.id;
+
+        // Find the article in PostgreSQL
+        const result = await pool.query(
+            `
+            SELECT
+                id,
+                title,
+                author,
+                content,
+                date,
+                updated_at,
+                category
+            FROM articles
+            WHERE id = $1
+            `,
+            [articleId]
+        );
+
+        // Article does not exist
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                error: 'Article not found.'
+            });
+        }
+
+        // Convert database field name for the frontend
+        const article = {
+            ...result.rows[0],
+            updatedAt: result.rows[0].updated_at,
+            category: result.rows[0].category
+        };
+
+        // Send the article to the frontend
+        res.json(article);
+
+    } catch (error) {
+        console.error('Error fetching article:', error);
+
+        res.status(500).json({
+            error: 'Unable to load article.'
+        });
+    }
+});
+
 // Display the page for a single article
 app.get('/articles/:id', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'article.html'));
