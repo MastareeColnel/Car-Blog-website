@@ -145,11 +145,18 @@
 
                     <hr>
 
-                    <!-- Article body -->
-                    <div
-                        id="article-content"
-                        class="article-reading-content">
-                        Loading article content...
+    <!-- Article image -->
+    <img
+     id="article-image"
+     class="img-fluid rounded mb-4 w-100"
+     alt=""
+     style="max-height: 500px; object-fit: cover; display: none;">
+                    
+    <!-- Article body -->
+            <div
+            id="article-content"
+            class="article-reading-content">
+            Loading article content...
                     </div>
 
                 </article>
@@ -223,6 +230,16 @@
                 // Display the article title
                 document.getElementById('article-title').textContent =
                     article.title;
+
+                // Display the article image when available
+const articleImage =
+    document.getElementById('article-image');
+
+if (article.image_url) {
+    articleImage.src = article.image_url;
+    articleImage.alt = article.title;
+    articleImage.style.display = 'block';
+}
 
                 // Display the article category
                 document.getElementById('article-category').textContent =

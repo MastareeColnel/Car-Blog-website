@@ -218,12 +218,26 @@ function displayArticles(articles) {
             <span class="badge bg-dark text-warning mb-2">
                   Reader Submission
             </span>
-            <!-- Article category -->
-            <span class="badge bg-secondary mb-2 ms-1">
-               ${escapeHtml(article.category || 'Uncategorized')}
-            </span>
 
-            <h2 class="blog-post-title mb-1 h3 text-dark">
+    <!-- Article category -->
+    <span class="badge bg-secondary mb-2 ms-1">
+        ${escapeHtml(article.category || 'Uncategorized')}
+    </span>
+
+    <!-- Article image -->
+   ${
+    article.image_url
+        ? `
+            <img
+                src="${escapeHtml(article.image_url)}"
+                alt="${escapeHtml(article.title)}"
+                class="img-fluid rounded mb-3 w-100"
+                style="max-height: 320px; object-fit: cover;">
+        `
+        : ''
+}
+
+    <h2 class="blog-post-title mb-1 h3 text-dark">
                 ${escapeHtml(article.title)}
             </h2>
 
