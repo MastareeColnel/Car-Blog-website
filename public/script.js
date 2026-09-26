@@ -356,6 +356,10 @@ document.getElementById('editAuthor').value =
 document.getElementById('editCategory').value =
     article.category || '';
 
+// Set the existing article image URL
+document.getElementById('editImageUrl').value =
+    article.image_url || '';
+
 document.getElementById('editContent').value =
     article.content;
 
@@ -405,6 +409,10 @@ document
         const category =
             document.getElementById('editCategory').value;
 
+        // Get the edited article image URL
+        const image_url =
+            document.getElementById('editImageUrl').value;
+
         try {
             const response =
                 await fetch(`/api/articles/${articleId}`, {
@@ -416,7 +424,8 @@ document
                         title,
                         author,
                         content,
-                        category
+                        category,
+                        image_url
                     })
                 });
 
