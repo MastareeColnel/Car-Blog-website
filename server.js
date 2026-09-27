@@ -1,3 +1,6 @@
+// Load session management
+const session = require('express-session');
+
 // Load required modules
 const express = require('express');
 
@@ -31,6 +34,19 @@ app.use(express.static(path.join(__dirname, 'public')));
 // --------------------------------------------------
 // Pages
 // --------------------------------------------------
+
+// Configure sessions for authenticated users
+app.use(
+    session({
+        secret: process.env.SESSION_SECRET,
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production'
+        }
+    })
+);
 
 // Main homepage
 app.get('/', (req, res) => {
