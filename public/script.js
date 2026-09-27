@@ -87,7 +87,8 @@ function searchArticles(searchTerm) {
 
 async function fetchArticles() {
     try {
-        const response = await fetch('https://car-blog-website.onrender.com/api/articles');
+        // Fetch articles from the current server
+        const response = await fetch('/api/articles');
 
         if (!response.ok) {
             throw new Error('Failed to fetch articles.');

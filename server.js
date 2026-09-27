@@ -1,3 +1,6 @@
+// Load password hashing
+const bcrypt = require('bcrypt');
+
 // Load session management
 const session = require('express-session');
 
@@ -52,6 +55,72 @@ app.use(
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'index.html'));
 });
+
+// Admin login page
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'login.html'));
+});
+
+// Handle admin login
+app.post('/api/login', async (req, res) => {
+    const { username, password } = req.body;
+
+    try {
+        // Find the user by username
+        const result = await pool.query(
+            'SELECT id, username, password_hash FROM users WHERE username = $1',
+            [username]
+        );
+
+        // Reject unknown usernames
+        if (result.rows.length === 0) {
+            return res.status(401).json({
+                error: 'Invalid username or password.'
+            });
+        }
+
+        const user = result.rows[0];
+
+        // Compare the submitted password with the stored hash
+        const passwordMatches = await bcrypt.compare(
+            password,
+            user.password_hash
+        );
+
+        // Reject an incorrect password
+        if (!passwordMatches) {
+            return res.status(401).json({
+                error: 'Invalid username or password.'
+            });
+        }
+
+        // Store the authenticated user in the session
+        req.session.userId = user.id;
+        req.session.username = user.username;
+
+        // Confirm successful login
+        res.json({
+            message: 'Login successful.'
+        });
+    } catch (error) {
+        console.error('Login error:', error.message);
+
+        res.status(500).json({
+            error: 'Unable to process login.'
+        });
+    }
+});
+
+// Protect routes that require an authenticated admin
+function requireAuth(req, res, next) {
+    if (!req.session.userId) {
+        return res.status(401).json({
+            error: 'Authentication required.'
+        });
+    }
+
+    next();
+}
 
 // --------------------------------------------------
 // Article page
@@ -159,7 +228,8 @@ const articles = result.rows.map(article => ({
 // API: POST a new article
 // --------------------------------------------------
 
-app.post('/api/articles', async (req, res) => {
+// Create a new article — admin access required
+app.post('/api/articles', requireAuth, async (req, res) => {
     try {
         const { title, author, content, category, image_url } = req.body;
 
@@ -228,7 +298,8 @@ const article = {
 // API: PUT (update) an existing article
 // --------------------------------------------------
 
-app.put('/api/articles/:id', async (req, res) => {
+// Update an article — admin access required
+app.put('/api/articles/:id', requireAuth, async (req, res) => {
     try {
         const articleId = req.params.id;
         const { title, author, content, category, image_url } = req.body;
@@ -307,7 +378,8 @@ app.put('/api/articles/:id', async (req, res) => {
 // API: DELETE an article
 // --------------------------------------------------
 
-app.delete('/api/articles/:id', async (req, res) => {
+// Delete an article — admin access required
+app.delete('/api/articles/:id', requireAuth, async (req, res) => {
     try {
         const articleId = req.params.id;
 
