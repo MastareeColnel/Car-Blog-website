@@ -15,6 +15,10 @@ const pool = require('./config/db');
 
 // Create the Express application
 const app = express();
+// Trust Render's reverse proxy so secure session cookies work in production.
+if (process.env.NODE_ENV === 'production') {
+    app.set('trust proxy', 1);
+}
 
 // Allow requests from other origins
 app.use(cors());
