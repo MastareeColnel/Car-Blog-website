@@ -1,19 +1,45 @@
 // Store the articles currently loaded from PostgreSQL
 let allArticles = [];
 
+// Track whether the current visitor has an authenticated admin session
+let isAuthenticated = false;
+
 // --------------------------------------------------
 // Start the homepage functionality
 // Loads articles and connects the search box.
 // --------------------------------------------------
 
-document.addEventListener('DOMContentLoaded', () => {
 
-    // Load the articles
-    fetchArticles();
+/* Check the current admin session and update the visible controls */
+async function checkAuthStatus() {
+    try {
+        const response = await fetch('/api/auth-status');
+        const status = await response.json();
+
+        isAuthenticated = response.ok && status.authenticated === true;
+    } catch (error) {
+        console.error('Unable to check authentication status:', error);
+        isAuthenticated = false;
+    }
+
+    // Show admin controls only to authenticated admins
+    const logoutButton = document.getElementById('logout-button');
+    const submitSection = document.getElementById('submit-story');
+
+    if (logoutButton) logoutButton.hidden = !isAuthenticated;
+    if (submitSection) submitSection.hidden = !isAuthenticated;
+}
+
+/* Initialize the homepage after checking the admin session */
+document.addEventListener('DOMContentLoaded', async () => {
+    // Check authentication before rendering article controls
+    await checkAuthStatus();
+
+    // Load articles after the authentication state is known
+    await fetchArticles();
 
     // Connect the search box
-    const searchInput =
-        document.getElementById('articleSearch');
+    const searchInput = document.getElementById('articleSearch');
 
     if (searchInput) {
         searchInput.addEventListener('input', () => {
@@ -22,15 +48,40 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Connect the category filter
-    const categoryFilter =
-        document.getElementById('categoryFilter');
+    const categoryFilter = document.getElementById('categoryFilter');
 
     if (categoryFilter) {
         categoryFilter.addEventListener('change', () => {
             searchArticles(searchInput ? searchInput.value : '');
         });
     }
+
+    // Send the logout request and refresh the homepage
+    const logoutButton = document.getElementById('logout-button');
+
+    if (logoutButton) {
+        logoutButton.addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/logout', {
+                    method: 'POST'
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || 'Logout failed.');
+                }
+
+                // Reload the page so public controls are restored
+                window.location.reload();
+            } catch (error) {
+                console.error('Logout error:', error);
+                alert(error.message || 'Unable to log out.');
+            }
+        });
+    }
 });
+
 
 
 // --------------------------------------------------
@@ -273,17 +324,25 @@ function displayArticles(articles) {
                     Read Story
                 </a>
 
-                <button
-                    onclick="editArticle(${article.id})"
-                    class="btn btn-sm btn-outline-secondary me-2">
-                    Edit
-                </button>
+                
+                ${
+                    isAuthenticated
+                        ? `
+                            <button
+                                onclick="editArticle('${article.id}')"
+                                class="btn btn-sm btn-outline-secondary me-2">
+                                Edit
+                            </button>
 
-                <button
-                    onclick="deleteArticle(${article.id})"
-                    class="btn btn-sm btn-outline-danger">
-                    Delete Story
-                </button>
+                            <button
+                                onclick="deleteArticle('${article.id}')"
+                                class="btn btn-sm btn-outline-danger">
+                                Delete Story
+                            </button>
+                        `
+                        : ''
+                }
+
 
             </div>
         `;

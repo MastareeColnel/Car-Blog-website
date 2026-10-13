@@ -13,35 +13,87 @@
 </head>
 <body>
 
-    <!-- ==========================================
-       HEADER SECTION
-       ========================================== -->
-    <div class="container">
-        <header class="blog-header py-3 border-bottom mb-4">
-            <div class="row flex-nowrap justify-content-between align-items-center">
-                <div class="col-4 pt-1">
-                    <a class="link-secondary text-decoration-none fst-italic" href="#subscribe">Get Updates</a>
-                </div>
-                <div class="col-4 text-center">
-                    <a class="blog-header-logo text-dark text-decoration-none fw-bold fs-3 font-georgia" href="#">⚜️ Motor Gazette</a>
-                </div>
-                <div class="col-4 d-flex justify-content-end align-items-center">
-                    <a class="btn btn-sm btn-outline-dark" href="#about">About Us</a>
-                </div>
-            </div>
-        </header>
+<!-- ==========================================
+   HEADER AND NAVIGATION SECTION
+   ========================================== -->
+<div class="container">
 
-        <!-- Navigation Bar -->
-        <div class="nav-scroller py-1 mb-2 border-bottom">
-            <nav class="nav d-flex justify-content-between">
-                <a class="p-2 link-body-emphasis active" href="#">Home</a>
-                <a class="p-2 link-body-emphasis" href="#collection">The Collection</a>
-                <a class="p-2 link-body-emphasis" href="#chronicles">Stories</a>
-                <a class="p-2 link-body-emphasis" href="#features">Features</a>
-                <a class="p-2 link-body-emphasis" href="#about">Our Story</a>
-            </nav>
+    <!-- Header: centered title with balanced left and right columns -->
+    <header class="blog-header py-3 border-bottom mb-2">
+        <div class="row align-items-center g-0">
+
+            <!-- Left column: Get Updates -->
+            <div class="col-4 text-start">
+                <a class="link-secondary text-decoration-none fst-italic"
+                   href="#subscribe">
+                    Get Updates
+                </a>
+            </div>
+
+            <!-- Center column: Website title -->
+            <div class="col-4 text-center">
+                <a class="blog-header-logo text-dark text-decoration-none fw-bold fs-3 font-georgia"
+                   href="#">
+                     Motor Gazette
+                </a>
+            </div>
+
+            <!-- Right column: balances the centered title -->
+            <div class="col-4"></div>
+
         </div>
+    </header>
+
+    <!-- Navigation: Bootstrap links in one horizontal row -->
+    <div class="nav-scroller py-1 mb-2 border-bottom">
+        <nav class="d-flex align-items-center justify-content-between w-100 flex-nowrap">
+
+            <!-- Navigation links -->
+            <div class="nav align-items-center flex-nowrap">
+                <a class="nav-link px-2 active text-nowrap link-body-emphasis"
+                   href="#">
+                    Home
+                </a>
+
+                <a class="nav-link px-2 text-nowrap link-body-emphasis"
+                   href="#collection">
+                    The Collection
+                </a>
+
+                <a class="nav-link px-2 text-nowrap link-body-emphasis"
+                   href="#chronicles">
+                    Stories
+                </a>
+
+                <a class="nav-link px-2 text-nowrap link-body-emphasis"
+                   href="#features">
+                    Features
+                </a>
+
+                <a class="nav-link px-2 text-nowrap link-body-emphasis"
+                   href="#about">
+                    Our Story
+                </a>
+
+                <a class="nav-link px-2 text-nowrap link-body-emphasis"
+                   href="#about">
+                    About Us
+                </a>
+            </div>
+
+            <!-- Single logout button: authentication controls visibility -->
+            <button
+                id="logout-button"
+                class="btn btn-sm btn-outline-secondary flex-shrink-0 ms-2"
+                type="button"
+                hidden>
+                Log Out
+            </button>
+
+        </nav>
     </div>
+
+</div>
 
 
     <!-- ==========================================
@@ -148,7 +200,8 @@
                 </section>
 
                 <!-- Content Submission Form Section (Nested cleanly inside left column) -->
-                <section id="submit-story" class="my-5 pt-4 border-top">
+                <!-- Admin-only story submission section; hidden by default -->
+                <section id="submit-story" class="my-5 pt-4 border-top" hidden>
                     <div class="p-4 bg-white border rounded shadow-sm">
                         <!-- Article submission form -->
                         <h3 class="font-georgia mb-3 h4">Submit a New Story</h3>

@@ -9,15 +9,27 @@ body {
     color: #141414 !important;
 }
 
-/* Navigation Links */
-.nav-scroller .nav-link {
-    color: #5c4033 !important;
-    font-style: italic;
+/* Navigation Links: consistent font, color, and spacing */
+.nav-scroller .nav {
+    gap: 0.5rem;
 }
 
-.nav-scroller .nav-link:hover, .nav-scroller .nav-link.active {
+.nav-scroller .nav-link {
+    color: #5c4033 !important;
+    font-family: Arial, Helvetica, sans-serif;
+    font-style: normal;
+    font-size: 0.95rem;
+    padding: 0.6rem 0.75rem !important;
+    white-space: nowrap;
+    transition: color 0.2s ease;
+}
+
+/* Highlight links on hover and the active page */
+.nav-scroller .nav-link:hover,
+.nav-scroller .nav-link.active {
     color: #141414 !important;
-    font-weight: bold;
+    font-weight: 700;
+    font-style: normal;
 }
 
 /* Featured Blog Hero */

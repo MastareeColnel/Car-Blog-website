@@ -111,6 +111,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+
 // Protect routes that require an authenticated admin
 function requireAuth(req, res, next) {
     if (!req.session.userId) {
@@ -121,6 +122,32 @@ function requireAuth(req, res, next) {
 
     next();
 }
+
+// Check whether an admin session is active
+app.get('/api/auth-status', (req, res) => {
+    res.json({
+        authenticated: Boolean(req.session.userId),
+        username: req.session.username || null
+    });
+});
+
+
+// Log out the current admin and destroy the session
+app.post('/api/logout', (req, res) => {
+    req.session.destroy((error) => {
+        if (error) {
+            console.error('Logout error:', error.message);
+            return res.status(500).json({
+                error: 'Unable to log out.'
+            });
+        }
+
+        // Remove the session cookie from the browser
+        res.clearCookie('connect.sid');
+        res.json({ message: 'Logout successful.' });
+    });
+});
+
 
 // --------------------------------------------------
 // Article page

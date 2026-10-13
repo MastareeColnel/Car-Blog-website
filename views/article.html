@@ -214,7 +214,7 @@
 
                 // Request the article from our API
                 const response =
-                    await fetch(`https://car-blog-website.onrender.com/api/articles/${articleId}`);
+                    await fetch(`/api/articles/${articleId}`);
 
                 const article =
                     await response.json();
