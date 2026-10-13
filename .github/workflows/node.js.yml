@@ -37,3 +37,12 @@ jobs:
           npm start &
           sleep 5
           curl --fail http://localhost:3000/api/articles
+
+      # Check that the application starts and serves the homepage
+      - name: Start application check
+        env:
+          SESSION_SECRET: ci-test-session-secret
+        run: |
+          npm start &
+          sleep 5
+          curl --fail http://localhost:3000/
