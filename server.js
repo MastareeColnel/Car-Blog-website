@@ -10,6 +10,9 @@ const PgSession = require('connect-pg-simple')(session);
 // Load required modules
 const express = require('express');
 
+// Load HTTP security headers
+const helmet = require('helmet');
+
 // Load login rate limiting
 const { rateLimit } = require('express-rate-limit');
 
@@ -25,6 +28,25 @@ const app = express();
 if (process.env.NODE_ENV === 'production') {
     app.set('trust proxy', 1);
 }
+
+// Apply HTTP security headers and Content Security Policy
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "https://cdn.jsdelivr.net"],
+            styleSrc: ["'self'", "https://cdn.jsdelivr.net"],
+            styleSrcAttr: ["'unsafe-inline'"],
+            imgSrc: ["'self'", "https:", "data:"],
+            fontSrc: ["'self'", "https:", "data:"],
+            connectSrc: ["'self'"],
+            objectSrc: ["'none'"],
+            baseUri: ["'self'"],
+            formAction: ["'self'"],
+            frameAncestors: ["'self'"]
+        }
+    }
+}));
 
 // Allow requests from other origins
 app.use(cors());

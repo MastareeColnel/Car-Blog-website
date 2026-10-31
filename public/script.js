@@ -329,13 +329,15 @@ function displayArticles(articles) {
                     isAuthenticated
                         ? `
                             <button
-                                onclick="editArticle('${article.id}')"
+                                data-action="edit"
+                                data-article-id="${article.id}"
                                 class="btn btn-sm btn-outline-secondary me-2">
                                 Edit
                             </button>
 
                             <button
-                                onclick="deleteArticle('${article.id}')"
+                                data-action="delete"
+                                data-article-id="${article.id}"
                                 class="btn btn-sm btn-outline-danger">
                                 Delete Story
                             </button>
@@ -659,3 +661,20 @@ function escapeHtml(str) {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
 }
+
+// Handle article management buttons without inline event handlers
+document.addEventListener('click', (event) => {
+    const button = event.target.closest('button[data-action][data-article-id]');
+
+    if (!button) {
+        return;
+    }
+
+    const articleId = button.dataset.articleId;
+
+    if (button.dataset.action === 'edit') {
+        editArticle(articleId);
+    } else if (button.dataset.action === 'delete') {
+        deleteArticle(articleId);
+    }
+});
