@@ -10,6 +10,9 @@ const PgSession = require('connect-pg-simple')(session);
 // Load required modules
 const express = require('express');
 
+// Load login rate limiting
+const { rateLimit } = require('express-rate-limit');
+
 // Enable cross-origin requests
 const cors = require('cors');
 
@@ -37,6 +40,22 @@ app.use(express.urlencoded({ extended: true }));
 
 // Parse JSON request bodies
 app.use(express.json());
+
+// Limit failed admin login attempts to five per IP every 15 minutes
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 5,
+    skipSuccessfulRequests: true,
+    standardHeaders: true,
+    legacyHeaders: false,
+
+    // Return a clear JSON response when the limit is reached
+    handler: (req, res) => {
+        res.status(429).json({
+            error: 'Too many login attempts. Please try again in 15 minutes.'
+        });
+    }
+});
 
 // Serve CSS, JavaScript, images, etc.
 app.use(express.static(path.join(__dirname, 'public')));
@@ -76,7 +95,7 @@ app.get('/login', (req, res) => {
 });
 
 // Handle admin login
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', loginLimiter, async (req, res) => {
     const { username, password } = req.body;
 
     try {
@@ -161,7 +180,6 @@ app.post('/api/logout', (req, res) => {
         res.json({ message: 'Logout successful.' });
     });
 });
-
 
 // --------------------------------------------------
 // Article page
