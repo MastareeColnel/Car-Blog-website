@@ -4,6 +4,9 @@ const bcrypt = require('bcrypt');
 // Load session management
 const session = require('express-session');
 
+// Store admin sessions in PostgreSQL
+const PgSession = require('connect-pg-simple')(session);
+
 // Load required modules
 const express = require('express');
 
@@ -42,15 +45,22 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Pages
 // --------------------------------------------------
 
-// Configure sessions for authenticated users
+// Configure persistent PostgreSQL sessions
 app.use(
     session({
+        store: new PgSession({
+            pool: pool,
+            tableName: 'user_sessions',
+            createTableIfMissing: true
+        }),
         secret: process.env.SESSION_SECRET,
         resave: false,
         saveUninitialized: false,
         cookie: {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production'
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 24 * 60 * 60 * 1000 // Session cookie expires after 24 hours
         }
     })
 );
