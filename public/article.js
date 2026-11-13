@@ -17,14 +17,22 @@ async function loadArticle() {
         // Display the article title
         document.getElementById('article-title').textContent = article.title;
 
-        // Display the article image when available
-        const articleImage = document.getElementById('article-image');
+// Display all article images in the gallery
+const imageGallery = document.getElementById('article-image-gallery');
 
-        if (article.image_url) {
-            articleImage.src = article.image_url;
-            articleImage.alt = article.title;
-            articleImage.style.display = 'block';
-        }
+const imageUrls = article.image_urls?.length
+    ? article.image_urls
+    : (article.image_url ? [article.image_url] : []);
+
+imageUrls.forEach((url, index) => {
+    const image = document.createElement('img');
+
+    image.src = url;
+    image.alt = `${article.title} - Image ${index + 1}`;
+    image.className = 'article-gallery-image rounded';
+
+    imageGallery.appendChild(image);
+});
 
         // Display the article category
         document.getElementById('article-category').textContent =

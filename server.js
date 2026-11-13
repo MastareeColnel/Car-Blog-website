@@ -224,7 +224,8 @@ app.get('/api/articles/:id', async (req, res) => {
                 date,
                 updated_at,
                 category,
-                image_url
+                image_url,
+                image_urls
             FROM articles
             WHERE id = $1
             `,
@@ -238,21 +239,26 @@ app.get('/api/articles/:id', async (req, res) => {
             });
         }
 
-        // Convert database field name for the frontend
-        const article = {
-            ...result.rows[0],
-            updatedAt: result.rows[0].updated_at,
-            category: result.rows[0].category,
-            image_url: result.rows[0].image_url
-        };
+// Prepare article data for the frontend
+const article = {
+    ...result.rows[0],
+    updatedAt: result.rows[0].updated_at,
+    category: result.rows[0].category,
+    image_url: result.rows[0].image_url,
+    image_urls: result.rows[0].image_urls?.length
+        ? result.rows[0].image_urls
+        : (result.rows[0].image_url
+            ? [result.rows[0].image_url]
+            : [])
+};
 
-        // Send the article to the frontend
-        res.json(article);
+// Send the article to the frontend
+    res.json(article);
 
     } catch (error) {
         console.error('Error fetching article:', error);
 
-        res.status(500).json({
+    res.status(500).json({
             error: 'Unable to load article.'
         });
     }
@@ -280,17 +286,23 @@ const result = await pool.query(`
         date,
         updated_at,
         category,
-        image_url
+        image_url,
+        image_urls
     FROM articles
     ORDER BY date DESC
 `);
         
-// Convert database field names to the names used by the frontend
+// Prepare article data for the frontend
 const articles = result.rows.map(article => ({
     ...article,
     updatedAt: article.updated_at,
     category: article.category,
-    image_url: article.image_url
+    image_url: article.image_url,
+    image_urls: article.image_urls?.length
+        ? article.image_urls
+        : (article.image_url
+            ? [article.image_url]
+            : [])
 }));
 
     // Send articles to the frontend
@@ -314,6 +326,18 @@ app.post('/api/articles', requireAuth, async (req, res) => {
     try {
         const { title, author, content, category, image_url } = req.body;
 
+// Collect and clean all submitted image URLs
+const imageUrls = Array.isArray(req.body.image_urls)
+    ? req.body.image_urls
+        .filter(url => typeof url === 'string' && url.trim())
+        .map(url => url.trim())
+    : (typeof image_url === 'string' && image_url.trim()
+        ? [image_url.trim()]
+        : []);
+
+// Retain the first image for backward compatibility
+const primaryImageUrl = imageUrls[0] || null;
+
         // Validate required fields
         if (!title || !content) {
             return res.status(400).json({
@@ -321,16 +345,16 @@ app.post('/api/articles', requireAuth, async (req, res) => {
             });
         }
 
-        // Generate a large unique ID
-        const articleId = Date.now().toString();
+// Generate a large unique ID
+const articleId = Date.now().toString();
 
-        // Insert the new article into PostgreSQL
+// Insert the new article into PostgreSQL
 const result = await pool.query(
     `
     INSERT INTO articles
-        (id, title, author, content, date, category, image_url)
+        (id, title, author, content, date, category, image_url, image_urls)
     VALUES
-        ($1, $2, $3, $4, CURRENT_TIMESTAMP, $5, $6)
+        ($1, $2, $3, $4, CURRENT_TIMESTAMP, $5, $6, $7::jsonb)
     RETURNING
         id,
         title,
@@ -339,7 +363,8 @@ const result = await pool.query(
         date,
         updated_at,
         category,
-        image_url
+        image_url,
+        image_urls
     `,
     [
         articleId,
@@ -347,7 +372,8 @@ const result = await pool.query(
         author?.trim() || 'Anonymous Curator',
         content.trim(),
         category,
-        image_url?.trim() || null
+        primaryImageUrl,
+        JSON.stringify(imageUrls)
     ]
 );
 
@@ -356,10 +382,11 @@ const article = {
     ...result.rows[0],
     updatedAt: result.rows[0].updated_at,
     category: result.rows[0].category,
-    image_url: result.rows[0].image_url
+    image_url: result.rows[0].image_url,
+    image_urls: result.rows[0].image_urls
 };
 
-        // Return the newly created article
+// Return the newly created article
         res.status(201).json({
             success: true,
             message: 'Article created successfully.',
@@ -385,6 +412,18 @@ app.put('/api/articles/:id', requireAuth, async (req, res) => {
         const articleId = req.params.id;
         const { title, author, content, category, image_url } = req.body;
 
+// Collect and clean all submitted image URLs
+const imageUrls = Array.isArray(req.body.image_urls)
+    ? req.body.image_urls
+        .filter(url => typeof url === 'string' && url.trim())
+        .map(url => url.trim())
+    : (typeof image_url === 'string' && image_url.trim()
+        ? [image_url.trim()]
+        : []);
+
+// Retain the first image for backward compatibility
+const primaryImageUrl = imageUrls[0] || null;
+
         // Validate required fields
         if (!title || !content) {
             return res.status(400).json({
@@ -392,37 +431,40 @@ app.put('/api/articles/:id', requireAuth, async (req, res) => {
             });
         }
 
-        // Update the article in PostgreSQL
-        const result = await pool.query(
-            `
-            UPDATE articles
-            SET
-                title = $1,
-                author = $2,
-                content = $3,
-                category = $4,
-                image_url = $5,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE id = $6
-            RETURNING
-                id,
-                title,
-                author,
-                content,
-                date,
-                updated_at,
-                category,
-                image_url
-            `,
-            [
-                title.trim(),
-                author?.trim() || 'Anonymous Curator',
-                content.trim(),
-                category,
-                image_url?.trim() || null,
-                articleId
-            ]
-        );
+// Update the article in PostgreSQL
+const result = await pool.query(
+    `
+    UPDATE articles
+    SET
+        title = $1,
+        author = $2,
+        content = $3,
+        category = $4,
+        image_url = $5,
+        image_urls = $6::jsonb,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = $7
+    RETURNING
+        id,
+        title,
+        author,
+        content,
+        date,
+        updated_at,
+        category,
+        image_url,
+        image_urls
+    `,
+    [
+        title.trim(),
+        author?.trim() || 'Anonymous Curator',
+        content.trim(),
+        category,
+        primaryImageUrl,
+        JSON.stringify(imageUrls),
+        articleId
+    ]
+);
 
         // Article does not exist
         if (result.rows.length === 0) {
@@ -436,7 +478,8 @@ app.put('/api/articles/:id', requireAuth, async (req, res) => {
             ...result.rows[0],
             updatedAt: result.rows[0].updated_at,
             category: result.rows[0].category,
-            image_url: result.rows[0].image_url
+            image_url: result.rows[0].image_url,
+            image_urls: result.rows[0].image_urls
         };
 
         // Return the updated article

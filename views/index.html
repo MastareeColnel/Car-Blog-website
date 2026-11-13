@@ -245,18 +245,27 @@
     </select>
 </div>
 
-<!-- Article image URL -->
+<!-- Article image URLs -->
 <div class="mb-3">
-    <label for="articleImageUrl" class="form-label small">
-        Image URL
+    <label class="form-label small">
+        Article Images
     </label>
 
-    <input
-        type="url"
-        class="form-control form-control-sm"
-        id="articleImageUrl"
-        name="image_url"
-        placeholder="https://example.com/image.jpg">
+    <div id="articleImageUrls">
+        <input
+            type="url"
+            class="form-control form-control-sm image-url-input mb-2"
+            id="articleImageUrl"
+            name="image_url"
+            placeholder="https://example.com/image.jpg">
+    </div>
+
+    <button
+        type="button"
+        class="btn btn-outline-secondary btn-sm"
+        data-add-image="articleImageUrls">
+        + Add another image
+    </button>
 </div>
 
                 <div class="mb-3">
@@ -411,18 +420,28 @@
     </select>
 </div>
 
-<!-- Article image URL -->
+<!-- Edit article image URLs -->
 <div class="mb-3">
-    <label for="editImageUrl" class="form-label small">
-        Image URL
+    <label class="form-label small">
+        Article Images
     </label>
 
-    <input
-        type="url"
-        class="form-control form-control-sm"
-        id="editImageUrl"
-        placeholder="https://example.com/image.jpg">
+    <div id="editImageUrls">
+        <input
+            type="url"
+            class="form-control form-control-sm image-url-input mb-2"
+            id="editImageUrl"
+            placeholder="https://example.com/image.jpg">
+    </div>
+
+    <button
+        type="button"
+        class="btn btn-outline-secondary btn-sm"
+        data-add-image="editImageUrls">
+        + Add another image
+    </button>
 </div>
+
             <div class="mb-3">
                         <label
                             for="editContent"

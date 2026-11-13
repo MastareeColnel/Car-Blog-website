@@ -9,6 +9,14 @@ let isAuthenticated = false;
 // Loads articles and connects the search box.
 // --------------------------------------------------
 
+// Collect all non-empty image URLs from a form container
+function getImageUrls(containerId) {
+    return Array.from(
+        document.querySelectorAll(`#${containerId} .image-url-input`)
+    )
+    .map(input => input.value.trim())
+    .filter(Boolean);
+}
 
 /* Check the current admin session and update the visible controls */
 async function checkAuthStatus() {
@@ -432,9 +440,47 @@ document.getElementById('editAuthor').value =
 document.getElementById('editCategory').value =
     article.category || '';
 
-// Set the existing article image URL
-document.getElementById('editImageUrl').value =
-    article.image_url || '';
+// Load all existing article image URLs into the edit form
+const editImageContainer = document.getElementById('editImageUrls');
+
+const existingImageUrls = article.image_urls?.length
+    ? article.image_urls
+    : (article.image_url ? [article.image_url] : []);
+
+// Reset the container to its original first input
+editImageContainer.innerHTML = `
+    <input
+        type="url"
+        class="form-control form-control-sm image-url-input mb-2"
+        id="editImageUrl"
+        placeholder="https://example.com/image.jpg">
+`;
+
+// Populate the image URL fields
+existingImageUrls.forEach((url, index) => {
+    if (index === 0) {
+        document.getElementById('editImageUrl').value = url;
+        return;
+    }
+
+    const imageField = document.createElement('div');
+    imageField.className = 'input-group mb-2';
+
+    const input = document.createElement('input');
+    input.type = 'url';
+    input.className = 'form-control form-control-sm image-url-input';
+    input.placeholder = 'https://example.com/image.jpg';
+    input.value = url;
+
+    const removeButton = document.createElement('button');
+    removeButton.type = 'button';
+    removeButton.className = 'btn btn-outline-danger btn-sm';
+    removeButton.dataset.removeImage = '';
+    removeButton.textContent = 'Remove';
+
+    imageField.append(input, removeButton);
+    editImageContainer.appendChild(imageField);
+});
 
 document.getElementById('editContent').value =
     article.content;
@@ -501,9 +547,10 @@ document
                         author,
                         content,
                         category,
-                        image_url
+                        image_url: getImageUrls('editImageUrls')[0] || '',
+                        image_urls: getImageUrls('editImageUrls')
                     })
-                });
+});
 
             const result = await response.json();
 
@@ -579,7 +626,8 @@ document
                         title,
                         author,
                         content,
-                        category
+                        category,
+                        image_urls: getImageUrls('articleImageUrls')
                     })
                 });
 
@@ -591,19 +639,28 @@ document
                 );
             }
 
-            // Display success message on the page
+// Display success message on the page
             showMessage(
                 'articleMessage',
                 'Article published successfully!'
             );
 
-            // Clear the form
-            document
-                .getElementById('articleForm')
-                .reset();
+// Clear the form
+document
+    .getElementById('articleForm')
+    .reset();
 
-            // Refresh the article list
-            fetchArticles();
+// Reset image fields to one empty input
+document.getElementById('articleImageUrls').innerHTML = `
+    <input
+        type="url"
+        class="form-control form-control-sm image-url-input mb-2"
+        id="articleImageUrl"
+        name="image_url"
+        placeholder="https://example.com/image.jpg">
+`;
+// Refresh the article list
+fetchArticles();
 
         } catch (error) {
             console.error(
@@ -676,5 +733,50 @@ document.addEventListener('click', (event) => {
         editArticle(articleId);
     } else if (button.dataset.action === 'delete') {
         deleteArticle(articleId);
+    }
+});
+
+// --------------------------------------------------
+// Dynamic article image fields
+// --------------------------------------------------
+
+document.addEventListener('click', (event) => {
+
+    // Add another image URL field
+    const addButton = event.target.closest('button[data-add-image]');
+
+    if (addButton) {
+        const containerId = addButton.dataset.addImage;
+        const container = document.getElementById(containerId);
+
+        if (!container) return;
+
+        const imageField = document.createElement('div');
+
+        imageField.className = 'input-group mb-2';
+
+        imageField.innerHTML = `
+            <input
+                type="url"
+                class="form-control form-control-sm image-url-input"
+                placeholder="https://example.com/image.jpg">
+
+            <button
+                type="button"
+                class="btn btn-outline-danger btn-sm"
+                data-remove-image
+                aria-label="Remove image URL">
+                Remove
+            </button>
+        `;
+
+        container.appendChild(imageField);
+    }
+
+    // Remove an additional image URL field
+    const removeButton = event.target.closest('button[data-remove-image]');
+
+    if (removeButton) {
+        removeButton.closest('.input-group').remove();
     }
 });
