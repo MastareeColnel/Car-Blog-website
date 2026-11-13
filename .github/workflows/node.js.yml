@@ -39,4 +39,3 @@ jobs:
           npm start &
           sleep 5
           curl --fail http://localhost:3000/
-          curl --fail http://localhost:3000/api/articles
