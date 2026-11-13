@@ -57,11 +57,16 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 // --------------------------------------------------
 
-// Parse form data
-app.use(express.urlencoded({ extended: true }));
+// Parse form data with a 1 MB request limit
+app.use(express.urlencoded({
+    extended: true,
+    limit: '1mb'
+}));
 
-// Parse JSON request bodies
-app.use(express.json());
+// Parse JSON request bodies with a 1 MB request limit
+app.use(express.json({
+    limit: '1mb'
+}));
 
 // Limit failed admin login attempts to five per IP every 15 minutes
 const loginLimiter = rateLimit({
@@ -317,6 +322,56 @@ const articles = result.rows.map(article => ({
     }
 });
 
+// Validate and normalize article input
+function validateArticleInput(body) {
+    const allowedCategories = [
+        'Classic Cars',
+        'Modern Cars',
+        'Motorsport',
+        'Technology',
+        'Electric Vehicles',
+        'Car Culture'
+    ];
+
+    const { title, author, content, category } = body;
+
+    if (typeof title !== 'string' || !title.trim()) {
+        return { error: 'A valid article title is required.' };
+    }
+
+    if (title.trim().length > 200) {
+        return { error: 'Article title cannot exceed 200 characters.' };
+    }
+
+    if (typeof content !== 'string' || !content.trim()) {
+        return { error: 'Valid article content is required.' };
+    }
+
+    if (content.trim().length > 50000) {
+        return { error: 'Article content cannot exceed 50,000 characters.' };
+    }
+
+    if (author !== undefined && typeof author !== 'string') {
+        return { error: 'Author must be text.' };
+    }
+
+    if (typeof category !== 'string' ||
+        !allowedCategories.includes(category.trim())) {
+        return { error: 'Please select a valid article category.' };
+    }
+
+    const cleanAuthor = author?.trim() || 'Anonymous Curator';
+
+    return {
+        data: {
+            title: title.trim(),
+            author: cleanAuthor,
+            content: content.trim(),
+            category: category.trim()
+        }
+    };
+}
+
 // --------------------------------------------------
 // API: POST a new article
 // --------------------------------------------------
@@ -324,26 +379,59 @@ const articles = result.rows.map(article => ({
 // Create a new article — admin access required
 app.post('/api/articles', requireAuth, async (req, res) => {
     try {
-        const { title, author, content, category, image_url } = req.body;
+        const validation = validateArticleInput(req.body);
 
-// Collect and clean all submitted image URLs
-const imageUrls = Array.isArray(req.body.image_urls)
+if (validation.error) {
+    return res.status(400).json({
+        error: validation.error
+    });
+}
+
+const { title, author, content, category } = validation.data;
+const { image_url } = req.body;
+
+// Validate article image URLs
+const submittedImageUrls = req.body.image_urls !== undefined
     ? req.body.image_urls
-        .filter(url => typeof url === 'string' && url.trim())
-        .map(url => url.trim())
-    : (typeof image_url === 'string' && image_url.trim()
-        ? [image_url.trim()]
-        : []);
+    : (image_url ? [image_url] : []);
 
-// Retain the first image for backward compatibility
-const primaryImageUrl = imageUrls[0] || null;
+if (!Array.isArray(submittedImageUrls)) {
+    return res.status(400).json({
+        error: 'Image URLs must be submitted as a list.'
+    });
+}
 
-        // Validate required fields
-        if (!title || !content) {
-            return res.status(400).json({
-                error: 'Title and content are required.'
-            });
+if (submittedImageUrls.length > 10) {
+    return res.status(400).json({
+        error: 'An article cannot have more than 10 images.'
+    });
+}
+
+const imageUrls = [];
+
+for (const value of submittedImageUrls) {
+    if (typeof value !== 'string' || !value.trim()) {
+        return res.status(400).json({
+            error: 'Every image URL must be a valid URL.'
+        });
+    }
+
+    try {
+        const parsedUrl = new URL(value.trim());
+
+        if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+            throw new Error('Unsupported URL protocol');
         }
+
+        imageUrls.push(parsedUrl.href);
+    } catch {
+        return res.status(400).json({
+            error: 'Please provide valid HTTP or HTTPS image URLs.'
+        });
+    }
+}
+
+const primaryImageUrl = imageUrls[0] || null;
 
 // Generate a large unique ID
 const articleId = Date.now().toString();
@@ -410,26 +498,61 @@ const article = {
 app.put('/api/articles/:id', requireAuth, async (req, res) => {
     try {
         const articleId = req.params.id;
-        const { title, author, content, category, image_url } = req.body;
+
+const validation = validateArticleInput(req.body);
+
+if (validation.error) {
+    return res.status(400).json({
+        error: validation.error
+    });
+}
+
+const { title, author, content, category } = validation.data;
+const { image_url } = req.body;
 
 // Collect and clean all submitted image URLs
-const imageUrls = Array.isArray(req.body.image_urls)
+// Validate article image URLs
+const submittedImageUrls = req.body.image_urls !== undefined
     ? req.body.image_urls
-        .filter(url => typeof url === 'string' && url.trim())
-        .map(url => url.trim())
-    : (typeof image_url === 'string' && image_url.trim()
-        ? [image_url.trim()]
-        : []);
+    : (image_url ? [image_url] : []);
 
-// Retain the first image for backward compatibility
-const primaryImageUrl = imageUrls[0] || null;
+if (!Array.isArray(submittedImageUrls)) {
+    return res.status(400).json({
+        error: 'Image URLs must be submitted as a list.'
+    });
+}
 
-        // Validate required fields
-        if (!title || !content) {
-            return res.status(400).json({
-                error: 'Title and content are required.'
-            });
+if (submittedImageUrls.length > 10) {
+    return res.status(400).json({
+        error: 'An article cannot have more than 10 images.'
+    });
+}
+
+const imageUrls = [];
+
+for (const value of submittedImageUrls) {
+    if (typeof value !== 'string' || !value.trim()) {
+        return res.status(400).json({
+            error: 'Every image URL must be a valid URL.'
+        });
+    }
+
+    try {
+        const parsedUrl = new URL(value.trim());
+
+        if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+            throw new Error('Unsupported URL protocol');
         }
+
+        imageUrls.push(parsedUrl.href);
+    } catch {
+        return res.status(400).json({
+            error: 'Please provide valid HTTP or HTTPS image URLs.'
+        });
+    }
+}
+
+const primaryImageUrl = imageUrls[0] || null;
 
 // Update the article in PostgreSQL
 const result = await pool.query(
