@@ -217,6 +217,11 @@ app.get('/api/articles/:id', async (req, res) => {
     try {
         // Get the article ID from the URL
         const articleId = req.params.id;
+        if (!isValidArticleId(articleId)) {
+            return res.status(400).json({
+                error: 'Invalid article ID.'
+            });
+        }
 
         // Find the article in PostgreSQL
         const result = await pool.query(
@@ -372,6 +377,18 @@ function validateArticleInput(body) {
     };
 }
 
+// Validate article IDs against PostgreSQL BIGINT limits
+function isValidArticleId(id) {
+    if (typeof id !== 'string' || !/^[1-9]\d*$/.test(id)) {
+        return false;
+    }
+
+    const maxBigInt = '9223372036854775807';
+
+    return id.length < maxBigInt.length ||
+        (id.length === maxBigInt.length && id <= maxBigInt);
+}
+
 // --------------------------------------------------
 // API: POST a new article
 // --------------------------------------------------
@@ -498,6 +515,11 @@ const article = {
 app.put('/api/articles/:id', requireAuth, async (req, res) => {
     try {
         const articleId = req.params.id;
+        if (!isValidArticleId(articleId)) {
+            return res.status(400).json({
+                error: 'Invalid article ID.'
+            });
+        }
 
 const validation = validateArticleInput(req.body);
 
@@ -629,6 +651,11 @@ const result = await pool.query(
 app.delete('/api/articles/:id', requireAuth, async (req, res) => {
     try {
         const articleId = req.params.id;
+        if (!isValidArticleId(articleId)) {
+            return res.status(400).json({
+                error: 'Invalid article ID.'
+            });
+        }
 
         // Delete the article from PostgreSQL
         const result = await pool.query(
