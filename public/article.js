@@ -2,6 +2,46 @@
  // Get the article ID from the current URL
 const articleId = window.location.pathname.split('/').pop();
 
+
+// Configure article sharing links
+function setupArticleSharing(article) {
+    const articleUrl = window.location.href;
+    const articleTitle = article.title;
+
+    const encodedUrl = encodeURIComponent(articleUrl);
+    const encodedTitle = encodeURIComponent(articleTitle);
+
+    // WhatsApp sharing
+    document.getElementById('share-whatsapp').href =
+        `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`;
+
+    // Facebook sharing
+    document.getElementById('share-facebook').href =
+        `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+
+    // LinkedIn sharing
+    document.getElementById('share-linkedin').href =
+        `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+    
+    // Telegram sharing
+    document.getElementById('share-telegram').href =
+        `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`;
+
+    // Copy article link
+    document.getElementById('copy-article-link')
+        .addEventListener('click', async () => {
+            const feedback = document.getElementById('copy-link-feedback');
+
+            try {
+                await navigator.clipboard.writeText(articleUrl);
+                feedback.textContent = 'Article link copied successfully.';
+            } catch (error) {
+                feedback.textContent = 'Unable to copy the link. Please copy it from your browser address bar.';
+            }
+        });
+}
+
+
 // Fetch and display the requested article
 async function loadArticle() {
     try {
@@ -61,6 +101,8 @@ imageUrls.forEach((url, index) => {
 
         // Update the browser tab title
         document.title = `${article.title} - Motor Gazette`;
+        // Configure social sharing for this article
+        setupArticleSharing(article);
 
     } catch (error) {
         // Log the error for debugging
