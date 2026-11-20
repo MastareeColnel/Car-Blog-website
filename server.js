@@ -22,6 +22,20 @@ const cors = require('cors');
 const path = require('path');
 const pool = require('./config/db');
 
+// Ensure required environment variables are configured
+const requiredEnvVars = ['DATABASE_URL', 'SESSION_SECRET'];
+
+const missingEnvVars = requiredEnvVars.filter(
+    (name) => !process.env[name]?.trim()
+);
+
+if (missingEnvVars.length > 0) {
+    console.error(
+        `Missing required environment variables: ${missingEnvVars.join(', ')}`
+    );
+    process.exit(1);
+}
+
 // Create the Express application
 const app = express();
 // Trust Render's reverse proxy so secure session cookies work in production.
