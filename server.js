@@ -10,6 +10,9 @@ const PgSession = require('connect-pg-simple')(session);
 // Load required modules
 const express = require('express');
 
+// Read and prepare HTML pages for dynamic social metadata
+const fs = require('fs');
+
 // Load HTTP security headers
 const helmet = require('helmet');
 
@@ -21,6 +24,11 @@ const cors = require('cors');
 
 const path = require('path');
 const pool = require('./config/db');
+
+// Canonical website address for social sharing metadata
+const SITE_URL = (
+    process.env.SITE_URL || 'https://car-blog-website.onrender.com'
+).replace(/\/+$/, '');
 
 // Ensure required environment variables are configured
 const requiredEnvVars = ['DATABASE_URL', 'SESSION_SECRET'];
@@ -288,10 +296,113 @@ const article = {
     }
 });
 
-// Display the page for a single article
-app.get('/articles/:id', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'article.html'));
+
+// Display an article with dynamic social sharing metadata
+app.get('/articles/:id', async (req, res) => {
+    const articleId = req.params.id;
+
+    // Validate the article ID
+    if (!isValidArticleId(articleId)) {
+        return res.status(400).send('Invalid article ID.');
+    }
+
+    try {
+        // Retrieve the article from Neon
+        const result = await pool.query(
+            `
+            SELECT title, content, image_url
+            FROM articles
+            WHERE id = $1
+            `,
+            [articleId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).send('Article not found.');
+        }
+
+        const article = result.rows[0];
+
+        // Prepare a short description from the article content
+        const plainContent = String(article.content || '')
+            .replace(/<[^>]*>/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        const description = plainContent.length > 200
+            ? `${plainContent.slice(0, 197).trimEnd()}...`
+            : plainContent || article.title;
+
+        // Escape values before inserting them into HTML
+        const escapeHtml = value => String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+
+        // Construct the canonical article URL
+        const articleUrl =
+            `${SITE_URL}/articles/${encodeURIComponent(articleId)}`;
+
+        // Validate the article's primary image URL
+        let imageUrl = '';
+
+        if (article.image_url) {
+            try {
+                const parsedImageUrl = new URL(article.image_url);
+
+                if (
+                    parsedImageUrl.protocol === 'https:' ||
+                    parsedImageUrl.protocol === 'http:'
+                ) {
+                    imageUrl = parsedImageUrl.href;
+                }
+            } catch {
+                imageUrl = '';
+            }
+        }
+
+        // Generate image metadata only when a valid image exists
+        const socialImageMeta = imageUrl
+            ? `
+    <meta property="og:image" content="${escapeHtml(imageUrl)}">
+    <meta property="og:image:alt" content="${escapeHtml(article.title)}">
+    <meta name="twitter:image" content="${escapeHtml(imageUrl)}">`
+            : '';
+
+        const twitterCard = imageUrl
+            ? 'summary_large_image'
+            : 'summary';
+
+        // Read the existing article page template
+        let html = await fs.promises.readFile(
+            path.join(__dirname, 'views', 'article.html'),
+            'utf8'
+        );
+
+        // Insert article-specific metadata
+        html = html
+            .replace(/\{\{META_TITLE\}\}/g,
+                escapeHtml(`${article.title} | The Classic Motor & Tech Gazette`))
+            .replace(/\{\{META_DESCRIPTION\}\}/g,
+                escapeHtml(description))
+            .replace(/\{\{CANONICAL_URL\}\}/g,
+                escapeHtml(articleUrl))
+            .replace(/\{\{TWITTER_CARD\}\}/g,
+                twitterCard)
+            .replace(/\{\{SOCIAL_IMAGE_META\}\}/g,
+                socialImageMeta);
+
+        res.type('html').send(html);
+
+    } catch (error) {
+        console.error('Error rendering article page:', error);
+
+        res.status(500).send('Unable to load article page.');
+    }
 });
+
 
 // --------------------------------------------------
 // API: GET all articles

@@ -4,7 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Motor Gazette - Article</title>
+<!-- Dynamic article metadata -->
+<title>{{META_TITLE}}</title>
+<meta name="description" content="{{META_DESCRIPTION}}">
+<link rel="canonical" href="{{CANONICAL_URL}}">
+
+<!-- Open Graph metadata -->
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="The Classic Motor &amp; Tech Gazette">
+<meta property="og:title" content="{{META_TITLE}}">
+<meta property="og:description" content="{{META_DESCRIPTION}}">
+<meta property="og:url" content="{{CANONICAL_URL}}">
+{{SOCIAL_IMAGE_META}}
+
+<!-- X/Twitter-compatible metadata -->
+<meta name="twitter:card" content="{{TWITTER_CARD}}">
+<meta name="twitter:title" content="{{META_TITLE}}">
+<meta name="twitter:description" content="{{META_DESCRIPTION}}">
 
     <!-- Bootstrap CSS CDN -->
     <link
