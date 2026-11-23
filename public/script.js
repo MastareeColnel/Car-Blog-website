@@ -88,6 +88,51 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
+
+    // Configure homepage social sharing
+    const homepageUrl = 'https://car-blog-website.onrender.com/';
+    const homepageTitle = 'The Classic Motor & Tech Gazette';
+    const encodedUrl = encodeURIComponent(homepageUrl);
+    const encodedTitle = encodeURIComponent(homepageTitle);
+
+    const whatsappShare = document.getElementById('homepage-share-whatsapp');
+    const facebookShare = document.getElementById('homepage-share-facebook');
+    const telegramShare = document.getElementById('homepage-share-telegram');
+    const linkedinShare = document.getElementById('homepage-share-linkedin');
+    const copyHomepageLink = document.getElementById('homepage-copy-link');
+
+    if (whatsappShare) {
+        whatsappShare.href =
+            `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`;
+    }
+
+    if (facebookShare) {
+        facebookShare.href =
+            `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+    }
+
+    if (telegramShare) {
+        telegramShare.href =
+            `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`;
+    }
+
+    if (linkedinShare) {
+        linkedinShare.href =
+            `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+    }
+
+    if (copyHomepageLink) {
+        copyHomepageLink.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(homepageUrl);
+                alert('Website link copied successfully.');
+            } catch (error) {
+                console.error('Homepage link copy error:', error);
+                alert('Unable to copy the link. Please copy it from your browser address bar.');
+            }
+        });
+    }
+
 });
 
 
